@@ -27,10 +27,10 @@ int       g_iTotalModels = 0;
 ModelInfo g_aryModels[256];
 
 // Player chosed
-int       g_aryPlayerChosed[MAX_CLIENT_INDEX];
+StringMap g_dicPlayerModels;
 
 // View Model List
-int       g_aryViewModels[MAX_CLIENT_INDEX];
+int       g_aryViewModels[MAX_CLIENT_INDEX + 1];
 
 bool      IsValidClient(int client)
 {
@@ -75,43 +75,47 @@ public void MenuHandler_ChangeModel(Menu menu, MenuAction action, int client, in
     if (action == MenuAction_Select)
     {
         ChangePlayerModel(client, g_aryModels[slot]);
-        g_aryPlayerChosed[client] = slot;
+        char steamid[64];
+        GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
+        g_dicPlayerModels.SetValue(steamid, slot, true);
         PrintToChat(client, "你正在使用\x03 %s", g_aryModels[slot].name);
         int view = g_aryViewModels[client];
-        if(IsValidEntity(view))
+        if (IsValidEntity(view))
         {
-           
         }
     }
 }
 
 void Timer_LazyChangePlayerModel(Handle timer, int client)
 {
-    ChangePlayerModel(client, g_aryModels[g_aryPlayerChosed[client]]);
+    char steamid[64];
+    GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
+    int chosed;
+    g_dicPlayerModels.GetValue(steamid, chosed);
+    ChangePlayerModel(client, g_aryModels[chosed]);
+}
+void Timer_LazyBOTChangePlayerModel(Handle timer, int client)
+{
+    ChangePlayerModel(client, g_aryModels[GetRandomInt(0, g_iTotalModels - 1)]);
 }
 
 Action Event_PlayerSpawnAndClass(Handle event, const char[] name, bool dontBroadcast)
 {
-    int client     = GetClientOfUserId(GetEventInt(event, "userid"));
-    int modelindex = g_aryPlayerChosed[client];
+    int  client = GetClientOfUserId(GetEventInt(event, "userid"));
+    char steamid[64];
+    GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
+    int modelindex = -1;
+    g_dicPlayerModels.GetValue(steamid, modelindex);
     if (modelindex >= 0)
     {
         CreateTimer(0.1, Timer_LazyChangePlayerModel, client);
     }
-    return Plugin_Handled;
-}
-
-Action Event_GameEnd(Handle event, const char[] name, bool dontBroadcast)
-{
-    for (int i = 1; i <= 33; i++)
+    else if (IsFakeClient(client))
     {
-        if (IsValidClient(i))
+        int rand = GetRandomInt(0, 100);
+        if (rand > 50)
         {
-            int modelindex = g_aryPlayerChosed[i];
-            if (modelindex >= 0)
-            {
-                CreateTimer(0.1, Timer_LazyChangePlayerModel, i);
-            }
+            CreateTimer(0.1, Timer_LazyBOTChangePlayerModel, client);
         }
     }
     return Plugin_Handled;
@@ -137,7 +141,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 
 public void OnEntityDestroyed(int entity)
 {
-    for (int i = 0; i < MAX_CLIENT_INDEX; i++)
+    for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
     {
         if (g_aryViewModels[i] == entity)
         {
@@ -158,12 +162,17 @@ public void OnMapInit()
         // not done yet
         // PrecacheModel(g_aryModels[i].hand_model, true);
     }
+    for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
+    {
+        g_aryViewModels[i] = -1;
+    }
 }
 
 public void OnPluginStart()
 {
+    g_dicPlayerModels = new StringMap();
     // Set Menu Title
-    g_pPlayerMenu = new Menu(MenuHandler_ChangeModel);
+    g_pPlayerMenu     = new Menu(MenuHandler_ChangeModel);
     g_pPlayerMenu.SetTitle("玩家模型菜单");
     // Read Menu config
     KeyValues kv = CreateKeyValues("models");
@@ -186,14 +195,11 @@ public void OnPluginStart()
     }
     while (kv.GotoNextKey());
     // Set up player chosed
-    for (int i = 0; i < MAX_CLIENT_INDEX; i++)
+    for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
     {
-        g_aryPlayerChosed[i] = -1;
-        g_aryViewModels[i]   = -1;
+        g_aryViewModels[i] = -1;
     }
     HookEvent("player_spawn", Event_PlayerSpawnAndClass, EventHookMode_Post);
     HookEvent("player_class", Event_PlayerSpawnAndClass, EventHookMode_Post);
-    HookEvent("game_end", Event_GameEnd, EventHookMode_Post);
-
     RegConsoleCmd("sm_equip", Command_ModelMenu, "Open Model Menu");
 }
