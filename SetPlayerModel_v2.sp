@@ -29,8 +29,8 @@ ModelInfo g_aryModels[256];
 // Player chosed
 StringMap g_dicPlayerModels;
 // original model
-char      g_szVCModel[] = "models/player/vc_assault.mdl";
-char      g_szUSModel[] = "models/player/us_assault.mdl";
+char      g_szVCModel[] = "models/player/soldier_vc_head01.mdl";
+char      g_szUSModel[] = "models/player/soldier_us_head01.mdl";
 
 // View Model List
 int       g_aryViewModels[MAX_CLIENT_INDEX + 1];
