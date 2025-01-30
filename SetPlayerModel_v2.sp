@@ -28,6 +28,9 @@ ModelInfo g_aryModels[256];
 
 // Player chosed
 StringMap g_dicPlayerModels;
+// original model
+char      g_szVCModel[] = "models/player/vc_assault.mdl";
+char      g_szUSModel[] = "models/player/us_assault.mdl";
 
 // View Model List
 int       g_aryViewModels[MAX_CLIENT_INDEX + 1];
@@ -121,7 +124,7 @@ Action Event_PlayerSpawnAndClass(Handle event, const char[] name, bool dontBroad
     return Plugin_Handled;
 }
 
-Action SDKHokk_ViewModelSpawnPost(int entity)
+Action SDKHook_ViewModelSpawnPost(int entity)
 {
     int owner = GetEntDataEnt2(entity, 0x6c4);
     if (IsValidClient(owner))
@@ -135,7 +138,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 {
     if (!strcmp(classname, "vietnam_viewmodel"))
     {
-        SDKHook(entity, SDKHook_SpawnPost, SDKHokk_ViewModelSpawnPost);
+        SDKHook(entity, SDKHook_SpawnPost, SDKHook_ViewModelSpawnPost);
     }
 }
 
@@ -146,7 +149,7 @@ public void OnEntityDestroyed(int entity)
         if (g_aryViewModels[i] == entity)
         {
             g_aryViewModels[i] = -1;
-            SDKUnhook(entity, SDKHook_SpawnPost, SDKHokk_ViewModelSpawnPost);
+            SDKUnhook(entity, SDKHook_SpawnPost, SDKHook_ViewModelSpawnPost);
             return;
         }
     }
@@ -166,6 +169,37 @@ public void OnMapInit()
     {
         g_aryViewModels[i] = -1;
     }
+}
+
+public void ResetPlayerModel(int client)
+{
+    if (!IsValidClient(client))
+    {
+        return;
+    }
+    int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
+    if (team == 3)
+    {
+        SetEntityModel(client, g_szVCModel);
+    }
+    else
+    {
+        SetEntityModel(client, g_szUSModel);
+    }
+}
+
+Action Event_GameEnd(Handle event, const char[] name, bool dontBroadcast)
+{
+    for (int i = 1; i <= MAX_CLIENT_INDEX; i++)
+    {
+        ResetPlayerModel(i);
+    }
+    return Plugin_Handled;
+}
+
+public void OnClientDisconnect(int client)
+{
+    ResetPlayerModel(client);
 }
 
 public void OnPluginStart()
@@ -201,5 +235,6 @@ public void OnPluginStart()
     }
     HookEvent("player_spawn", Event_PlayerSpawnAndClass, EventHookMode_Post);
     HookEvent("player_class", Event_PlayerSpawnAndClass, EventHookMode_Post);
+    HookEvent("game_end", Event_GameEnd, EventHookMode_Pre);
     RegConsoleCmd("sm_equip", Command_ModelMenu, "Open Model Menu");
 }
