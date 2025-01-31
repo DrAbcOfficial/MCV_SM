@@ -29,11 +29,10 @@ ModelInfo g_aryModels[256];
 // Player chosed
 StringMap g_dicPlayerModels;
 // original model
-char      g_szVCModel[] = "models/player/soldier_vc_head01.mdl";
-char      g_szUSModel[] = "models/player/soldier_us_head01.mdl";
+// char      g_szUSModel[] = "models/player/soldier_us_head01.mdl";
 
 // View Model List
-int       g_aryViewModels[MAX_CLIENT_INDEX + 1];
+// int       g_aryViewModels[MAX_CLIENT_INDEX + 1];
 
 bool      IsValidClient(int client)
 {
@@ -82,10 +81,10 @@ public void MenuHandler_ChangeModel(Menu menu, MenuAction action, int client, in
         GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
         g_dicPlayerModels.SetValue(steamid, slot, true);
         PrintToChat(client, "你正在使用\x03 %s", g_aryModels[slot].name);
-        int view = g_aryViewModels[client];
-        if (IsValidEntity(view))
-        {
-        }
+        // int view = g_aryViewModels[client];
+        // if (IsValidEntity(view))
+        // {
+        // }
     }
 }
 
@@ -124,36 +123,36 @@ Action Event_PlayerSpawnAndClass(Handle event, const char[] name, bool dontBroad
     return Plugin_Handled;
 }
 
-Action SDKHook_ViewModelSpawnPost(int entity)
-{
-    int owner = GetEntDataEnt2(entity, 0x6c4);
-    if (IsValidClient(owner))
-    {
-        g_aryViewModels[owner] = entity;
-    }
-    return Plugin_Handled;
-}
+// Action SDKHook_ViewModelSpawnPost(int entity)
+// {
+//     int owner = GetEntDataEnt2(entity, 0x6c4);
+//     if (IsValidClient(owner))
+//     {
+//         g_aryViewModels[owner] = entity;
+//     }
+//     return Plugin_Handled;
+// }
 
-public void OnEntityCreated(int entity, const char[] classname)
-{
-    if (!strcmp(classname, "vietnam_viewmodel"))
-    {
-        SDKHook(entity, SDKHook_SpawnPost, SDKHook_ViewModelSpawnPost);
-    }
-}
+// public void OnEntityCreated(int entity, const char[] classname)
+// {
+//     if (!strcmp(classname, "vietnam_viewmodel"))
+//     {
+//         SDKHook(entity, SDKHook_SpawnPost, SDKHook_ViewModelSpawnPost);
+//     }
+// }
 
-public void OnEntityDestroyed(int entity)
-{
-    for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
-    {
-        if (g_aryViewModels[i] == entity)
-        {
-            g_aryViewModels[i] = -1;
-            SDKUnhook(entity, SDKHook_SpawnPost, SDKHook_ViewModelSpawnPost);
-            return;
-        }
-    }
-}
+// public void OnEntityDestroyed(int entity)
+// {
+//     for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
+//     {
+//         if (g_aryViewModels[i] == entity)
+//         {
+//             g_aryViewModels[i] = -1;
+//             SDKUnhook(entity, SDKHook_SpawnPost, SDKHook_ViewModelSpawnPost);
+//             return;
+//         }
+//     }
+// }
 
 public void OnMapInit()
 {
@@ -165,42 +164,34 @@ public void OnMapInit()
         // not done yet
         // PrecacheModel(g_aryModels[i].hand_model, true);
     }
-    for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
-    {
-        g_aryViewModels[i] = -1;
-    }
+    // for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
+    // {
+    //     g_aryViewModels[i] = -1;
+    // }
 }
 
-public void ResetPlayerModel(int client)
-{
-    if (!IsValidClient(client))
-    {
-        return;
-    }
-    int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
-    if (team == 3)
-    {
-        SetEntityModel(client, g_szVCModel);
-    }
-    else
-    {
-        SetEntityModel(client, g_szUSModel);
-    }
-}
+// public void ResetPlayerModel(int client)
+// {
+//     if (!IsValidClient(client))
+//     {
+//         return;
+//     }
+//     SetEntityModel(client, g_szUSModel);
+// }
 
-Action Event_GameEnd(Handle event, const char[] name, bool dontBroadcast)
-{
-    for (int i = 1; i <= MAX_CLIENT_INDEX; i++)
-    {
-        ResetPlayerModel(i);
-    }
-    return Plugin_Handled;
-}
+// Action Event_GameEnd(Handle event, const char[] name, bool dontBroadcast)
+// {
+//     for (int i = 1; i <= MAX_CLIENT_INDEX; i++)
+//     {
+//         ResetPlayerModel(i);
+//     }
+//     return Plugin_Handled;
+// }
 
-public void OnClientDisconnect(int client)
-{
-    ResetPlayerModel(client);
-}
+// public void OnClientDisconnect(int client)
+// {
+//     ResetPlayerModel(client);
+// }
 
 public void OnPluginStart()
 {
@@ -218,7 +209,7 @@ public void OnPluginStart()
     do
     {
         kv.GetString("model", g_aryModels[g_iTotalModels].player_model, sizeof(g_aryModels[g_iTotalModels].player_model));
-        kv.GetString("c_hand", g_aryModels[g_iTotalModels].hand_model, sizeof(g_aryModels[g_iTotalModels].hand_model));
+        //kv.GetString("c_hand", g_aryModels[g_iTotalModels].hand_model, sizeof(g_aryModels[g_iTotalModels].hand_model));
         kv.GetString("name", g_aryModels[g_iTotalModels].name, sizeof(g_aryModels[g_iTotalModels].name));
 
         g_pPlayerMenu.AddItem(g_aryModels[g_iTotalModels].name, g_aryModels[g_iTotalModels].name);
@@ -229,12 +220,12 @@ public void OnPluginStart()
     }
     while (kv.GotoNextKey());
     // Set up player chosed
-    for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
-    {
-        g_aryViewModels[i] = -1;
-    }
+    // for (int i = 0; i <= MAX_CLIENT_INDEX; i++)
+    // {
+    //     g_aryViewModels[i] = -1;
+    // }
     HookEvent("player_spawn", Event_PlayerSpawnAndClass, EventHookMode_Post);
     HookEvent("player_class", Event_PlayerSpawnAndClass, EventHookMode_Post);
-    HookEvent("game_end", Event_GameEnd, EventHookMode_Pre);
+
     RegConsoleCmd("sm_equip", Command_ModelMenu, "Open Model Menu");
 }
