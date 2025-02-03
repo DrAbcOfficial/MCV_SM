@@ -1,5 +1,3 @@
-#pragma semicolon 1
-
 #include <sourcemod>
 #include <sdktools>
 
@@ -34,7 +32,7 @@ bool      IsValidClient(int client)
 }
 void ChangePlayerModel(int client, char[] model)
 {
-    if (IsPlayerAlive(client))
+    if (IsValidClient(client) && IsPlayerAlive(client))
     {
         SetEntityModel(client, model);
         int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
@@ -49,6 +47,62 @@ void ChangePlayerModel(int client, char[] model)
     }
 }
 
+void LoadConfig()
+{
+    g_pRootMenu.RemoveAllItems();
+    StringMapSnapshot snap = g_dicMenus.Snapshot();
+    char              keys[64];
+    for (int i = 0; i < g_dicMenus.Size; i++)
+    {
+        snap.GetKey(i, keys, sizeof(keys));
+        Menu sub;
+        g_dicMenus.GetValue(keys, sub);
+        sub.Close();
+    }
+    g_dicMenus.Clear();
+    g_dicModels.Clear();
+    g_dicPlayerModels.Clear();
+
+    // Read Menu config
+    KeyValues kv = CreateKeyValues("models");
+    kv.ImportFromFile("cfg/xuebao_models.vdf");
+    if (!kv.GotoFirstSubKey())
+    {
+        return;
+    }
+    do
+    {
+        char name[64];
+        char buffer[PLATFORM_MAX_PATH];
+        kv.GetSectionName(name, sizeof(name));
+        kv.GetString("model", buffer, sizeof(buffer));
+        g_dicModels.SetString(name, buffer);
+        char cat[64];
+        kv.GetString("category", cat, sizeof(cat));
+        Menu sub;
+        if (g_dicMenus.ContainsKey(cat))
+        {
+            g_dicMenus.GetValue(cat, sub);
+        }
+        else
+        {
+            sub = new Menu(MenuHandler_ChangeModel);
+            sub.SetTitle(cat);
+            g_dicMenus.SetValue(cat, sub);
+            g_pRootMenu.AddItem(cat, cat);
+        }
+        sub.AddItem(buffer, name);
+        if (sub.ItemCount > 10)
+        {
+            LogError("Category %s has more than 10 models! please create a new category!");
+        }
+
+        PrecacheModel(buffer, false);
+    }
+    while (kv.GotoNextKey());
+    kv.DeleteThis();
+}
+
 public Action Command_ModelMenu(int client, int args)
 {
     if (!IsValidClient(client))
@@ -60,15 +114,21 @@ public Action Command_ModelMenu(int client, int args)
     return Plugin_Handled;
 }
 
+public Action Command_ReloadCfg(int client, int args)
+{
+    LoadConfig();
+    return Plugin_Handled;
+}
+
 public void MenuHandler_ChangeModel(Menu menu, MenuAction action, int client, int slot)
 {
     if (action == MenuAction_Select)
     {
         char info[PLATFORM_MAX_PATH];
         char display[64];
-        int style;
+        int  style;
         menu.GetItem(slot, info, sizeof(info), style, display, sizeof(display));
-    
+
         ChangePlayerModel(client, info);
         char steamid[64];
         GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
@@ -87,6 +147,7 @@ public void MenuHandler_SubMenu(Menu menu, MenuAction action, int client, int sl
         {
             Menu sub;
             g_dicMenus.GetValue(infobuf, sub);
+            sub.ExitBackButton = true;
             sub.Display(client, 60);
         }
     }
@@ -154,47 +215,12 @@ public void OnPluginStart()
     // Set Menu Title
     g_pRootMenu       = new Menu(MenuHandler_SubMenu);
     g_pRootMenu.SetTitle("玩家模型菜单");
-    // Read Menu config
-    KeyValues kv = CreateKeyValues("models");
-    kv.ImportFromFile("cfg/xuebao_models.vdf");
-    if (!kv.GotoFirstSubKey())
-    {
-        return;
-    }
-    do
-    {
-        char name[64];
-        char buffer[PLATFORM_MAX_PATH];
-        kv.GetSectionName(name, sizeof(name));
-        kv.GetString("model", buffer, sizeof(buffer));
-        g_dicModels.SetString(name, buffer);
-        char cat[64];
-        kv.GetString("category", cat, sizeof(cat));
-        Menu sub;
-        if (g_dicMenus.ContainsKey(cat))
-        {
-            g_dicMenus.GetValue(cat, sub);
-        }
-        else
-        {
-            sub = new Menu(MenuHandler_ChangeModel  );
-            sub.SetTitle(cat);
-            g_dicMenus.SetValue(cat, sub);
-            g_pRootMenu.AddItem(cat, cat);
-        }
-        sub.AddItem(buffer, name);
-        if(sub.ItemCount > 10)
-        {
-            LogError("Category %s has more than 10 models! please create a new category!");
-        }
 
-        PrecacheModel(buffer, true);
-    }
-    while (kv.GotoNextKey());
-    kv.DeleteThis();
+    LoadConfig();
 
     HookEvent("player_spawn", Event_PlayerSpawnAndClass, EventHookMode_Post);
     HookEvent("player_class", Event_PlayerSpawnAndClass, EventHookMode_Post);
 
     RegConsoleCmd("sm_equip", Command_ModelMenu, "Open Model Menu");
+    RegAdminCmd("sm_models_reload", Command_ReloadCfg, ADMFLAG_CONFIG, "Reload Model Menu");
 }
