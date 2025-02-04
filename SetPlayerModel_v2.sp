@@ -18,7 +18,6 @@ const int MAX_CLIENT_INDEX = 33;
 
 // Model and list
 StringMap g_dicModels;
-
 // Player chosed
 StringMap g_dicPlayerModels;
 
@@ -34,7 +33,15 @@ void ChangePlayerModel(int client, char[] model)
 {
     if (IsValidClient(client) && IsPlayerAlive(client))
     {
-        SetEntityModel(client, model);
+
+        static int table = INVALID_STRING_TABLE;
+        if (table == INVALID_STRING_TABLE)
+            table = FindStringTable("modelprecache");
+        bool save = LockStringTables(false);
+        int modelidx = FindStringIndex(table, model);
+        LockStringTables(save);
+        SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
+        //SetEntityModel(client, model);
         int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
         if (team == 3)
         {
@@ -47,7 +54,7 @@ void ChangePlayerModel(int client, char[] model)
     }
 }
 
-void LoadConfig()
+void ClearMemeory()
 {
     g_pRootMenu.RemoveAllItems();
     StringMapSnapshot snap = g_dicMenus.Snapshot();
@@ -60,9 +67,23 @@ void LoadConfig()
         sub.Close();
     }
     g_dicMenus.Clear();
+
+    StringMapSnapshot msnap = g_dicModels.Snapshot();
+    for (int i = 0; i < msnap.Length; i++)
+    {
+        msnap.GetKey(i, keys, sizeof(keys));
+        StringMap model_info;
+        g_dicModels.GetValue(keys, model_info);
+        model_info.Clear();
+        model_info.Close();
+    }
     g_dicModels.Clear();
     g_dicPlayerModels.Clear();
+}
 
+void LoadConfig()
+{
+    ClearMemeory();
     // Read Menu config
     KeyValues kv = CreateKeyValues("models");
     kv.ImportFromFile("cfg/xuebao_models.vdf");
@@ -72,11 +93,19 @@ void LoadConfig()
     }
     do
     {
-        char name[64];
-        char buffer[PLATFORM_MAX_PATH];
+        char      name[64];
+        char      buffer[PLATFORM_MAX_PATH];
+        char      c_hand[PLATFORM_MAX_PATH];
         kv.GetSectionName(name, sizeof(name));
         kv.GetString("model", buffer, sizeof(buffer));
-        g_dicModels.SetString(name, buffer);
+        kv.GetString("c_hand", c_hand, sizeof(c_hand));
+
+
+        StringMap model_info = new StringMap();
+        model_info.SetString("model", buffer);
+        model_info.SetString("c_hand", c_hand);
+
+        g_dicModels.SetValue(name, model_info);
         char cat[64];
         kv.GetString("category", cat, sizeof(cat));
         Menu sub;
@@ -96,8 +125,6 @@ void LoadConfig()
         {
             LogError("Category %s has more than 10 models! please create a new category!");
         }
-
-        PrecacheModel(buffer, false);
     }
     while (kv.GotoNextKey());
     kv.DeleteThis();
@@ -166,8 +193,10 @@ void Timer_LazyBOTChangePlayerModel(Handle timer, int client)
     StringMapSnapshot keys = g_dicModels.Snapshot();
     char              key[64];
     keys.GetKey(GetRandomInt(0, g_dicModels.Size - 1), key, sizeof(key));
-    char model[PLATFORM_MAX_PATH];
-    g_dicModels.GetString(key, model, sizeof(model));
+    char      model[PLATFORM_MAX_PATH];
+    StringMap model_info;
+    g_dicModels.GetValue(key, model_info);
+    model_info.GetString("model", model, sizeof(model));
     ChangePlayerModel(client, model);
 }
 
@@ -196,13 +225,14 @@ public void OnMapInit()
     if (g_dicModels.Size <= 0)
         return;
     StringMapSnapshot keys = g_dicModels.Snapshot();
-
-    for (int i = 0; i < g_dicModels.Size; i++)
+    for (int i = 0; i < keys.Length; i++)
     {
         char key[64];
         char buffer[PLATFORM_MAX_PATH];
         keys.GetKey(i, key, sizeof(key));
-        g_dicModels.GetString(key, buffer, sizeof(buffer));
+        StringMap model_info;
+        g_dicModels.GetValue(key, model_info);
+        model_info.GetString("model", buffer, sizeof(buffer));
         PrecacheModel(buffer, true);
     }
 }
@@ -223,4 +253,9 @@ public void OnPluginStart()
 
     RegConsoleCmd("sm_equip", Command_ModelMenu, "Open Model Menu");
     RegAdminCmd("sm_models_reload", Command_ReloadCfg, ADMFLAG_CONFIG, "Reload Model Menu");
+}
+
+public void OnPluginEnd()
+{
+    ClearMemeory();
 }
