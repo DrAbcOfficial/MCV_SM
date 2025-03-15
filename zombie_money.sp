@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <sdktools>
+#include <zmboie_core>
 public Plugin myinfo =
 {
     name        = "Zombie Money",
@@ -13,24 +14,13 @@ ConVar g_pPlayerDeathIncome;
 ConVar g_pPlayerSurvivedIncome;
 
 
-// undefined4 __thiscall CVietnam_Player::GetCredits(CVietnam_Player *this)
-// {
-//   return *(undefined4 *)(this + 0x21d8);
-// }
-
-void GiveMoney(int client, int give)
-{
-    int money = GetEntData(client, 0x21d8);
-    SetEntData(client, 0x21d8, money + give);
-}
-
 Action    Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
     int  client = GetClientOfUserId(GetEventInt(event, "userid"));
     if(IsClientInGame(client))
     {
         int add = g_pPlayerDeathIncome.IntValue;
-        GiveMoney(client, add);
+        ZM_AddMoney(client, add);
         PrintToChat(client, "[MCV]你死了，获得了%d元抚恤金。", add);
     }
     return Plugin_Continue;
@@ -47,7 +37,7 @@ Action    Event_PhaseChange(Handle event, const char[] name, bool dontBroadcast)
             if(IsValidEntity(i) && IsClientInGame(i))
             {
                 int add= g_pPlayerSurvivedIncome.IntValue;
-                GiveMoney(i, add);
+                ZM_AddMoney(i, add);
                 PrintToChat(i, "[MCV]你获得了%d元工资。", add);
             }
         }
