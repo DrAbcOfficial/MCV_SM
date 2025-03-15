@@ -20,7 +20,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("ZM_GetZombieCount", Native_GetZombieCount);
     CreateNative("ZM_GetZombieByIndex", Native_GetZombieByIndex);
 
-    RegPluginLibrary("CustomPlayerSkins");
+    RegPluginLibrary("Zombie Core");
     return APLRes_Success;
 }
 
