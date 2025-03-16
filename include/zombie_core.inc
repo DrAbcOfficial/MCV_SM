@@ -46,6 +46,20 @@ native int  ZM_GetZombieCount();
  */
 native int  ZM_GetZombieByIndex(int index);
 
+#define ZM_PHASE_WAITING 0
+#define ZM_PHASE_COMBAT  1
+
+forward void OnZombiePhaseChanged(int phase);
+
+/**
+ * Get now game phase
+ *
+ * @return phase ZM_PHASE_WAITING or ZM_PHASE_COMBAT
+ */
+native int   ZM_GetPhase();
+
+forward void OnZombieKilled(int zombie, int attacker, int inflictor, int damagebits);
+
 public SharedPlugin __pl_zombie_core = {
     name = "Zombie Core",
     file = "zombie_core.smx",
@@ -65,5 +79,6 @@ public __pl_zombie_core_SetNTVOptional()
     MarkNativeAsOptional("ZM_AddMoney");
     MarkNativeAsOptional("ZM_GetZombieCount");
     MarkNativeAsOptional("ZM_GetZombieByIndex");
+    MarkNativeAsOptional("ZM_GetPhase");
 }
 #endif

@@ -1,45 +1,47 @@
 #include <sourcemod>
-#include <sdktools>
-#include <sdkhooks>
-#include <zmboie_core>
+#include <zombie_core>
+
+#define PLUGIN_NAME        "Zombie Glow"
+#define PLUGIN_DESCRIPTION "全新僵尸高亮王一代"
 
 public Plugin myinfo =
 {
-    name        = "Zombie Glow",
+    name        = PLUGIN_NAME,
     author      = "Dr.Abc",
-    description = "全新僵尸高亮王一代",
-    version     = "Zombie Glow",
-    url         = "Zombie Glow"
+    description = PLUGIN_DESCRIPTION,
+    version     = PLUGIN_DESCRIPTION,
+    url         = PLUGIN_DESCRIPTION
 };
-Action Event_ZombieKilled(Handle event, const char[] name, bool dontBroadcast)
+
+ConVar g_pGlowCount;
+
+public void OnZombieKilled(int zombie, int attacker, int inflictor, int damagebits)
 {
     int count = ZM_GetZombieCount();
-    if (count <= 15)
+    if (count <= g_pGlowCount.IntValue)
     {
         for (int i = 0; i < count; i++)
         {
-            int zombie = ZM_GetZombieByIndex(i);
-            if (IsValidEntity(zombie))
+            int z = ZM_GetZombieByIndex(i);
+            if (IsValidEntity(z))
             {
-                SetEntProp(zombie, Prop_Send, "m_fEffects", 2);
+                float org[3];
+                GetEntPropVector(z, Prop_Send, "m_vecOrigin", org);
+                Event event = CreateEvent("player_ping");
+                if (event == null)
+                    return;
+                event.SetInt("userid", 0);
+                event.SetInt("entityid", z);
+                event.SetFloat("x", org[0]);
+                event.SetFloat("y", org[1]);
+                event.SetFloat("z", org[2]);
+                event.Fire();
             }
         }
     }
-    return Plugin_Continue;
-}
-
-public Action Command_Nuke(int client, int args)
-{
-    for (int i = 0; i < ZM_GetZombieCount(); i++)
-    {
-        SDKHooks_TakeDamage(ZM_GetZombieByIndex(i), 0, 0, 999999999.0);
-    }
-    PrintToChatAll("[MCV]核平了所有僵尸....");
-    return Plugin_Handled;
 }
 
 public void OnPluginStart()
 {
-    HookEvent("entity_killed", Event_ZombieKilled, EventHookMode_Post);
-    RegAdminCmd("sm_zombie_nuke", Command_Nuke, ADMFLAG_CONFIG, "Nuke all zombie");
+    g_pGlowCount = CreateConVar("sm_zombie_glow_count", "15", "Count that zombie mark glow", 0);
 }
