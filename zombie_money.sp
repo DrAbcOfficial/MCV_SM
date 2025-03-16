@@ -1,5 +1,4 @@
 #include <sourcemod>
-#include <sdktools>
 #include <zombie_core>
 
 #define PLUGIN_NAME        "Zombie Money"
@@ -16,6 +15,8 @@ public Plugin myinfo =
 
 ConVar g_pPlayerDeathIncome;
 ConVar g_pPlayerSurvivedIncome;
+ConVar g_pPlayerHeadshotIncome;
+ConVar g_pPlayerBackblastIncome;
 
 public void OnZombiePhaseChanged(int phase)
 {
@@ -27,9 +28,26 @@ public void OnZombiePhaseChanged(int phase)
             {
                 int add = g_pPlayerSurvivedIncome.IntValue;
                 ZM_AddMoney(i, add);
-                PrintToChat(i, "[MCV]你获得了%d元工资。", add);
+                PrintCenterText(i, "你获得了%d元工资。", add);
             }
         }
+    }
+}
+
+public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name, char[] weapon_id, 
+                        int damagebits, bool headshot, bool backblast, int penetrated, float killdistance)
+{
+    if(headshot)
+    {
+        int add = g_pPlayerHeadshotIncome.IntValue;
+        ZM_AddMoney(attacker, add);
+        PrintCenterText(attacker, "爆头奖励%d元！", add);
+    }
+    if(backblast)
+    {
+        int add = g_pPlayerBackblastIncome.IntValue;
+        ZM_AddMoney(attacker, add);
+        PrintCenterText(attacker, "尾气击杀！奖励%d元。", add);
     }
 }
 
@@ -42,14 +60,16 @@ Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
     {
         int add = g_pPlayerDeathIncome.IntValue;
         ZM_AddMoney(client, add);
-        PrintToChat(client, "[MCV]你死了，获得了%d元抚恤金。", add);
+        PrintCenterText(client, "你死了，获得了%d元抚恤金。", add);
     }
     return Plugin_Continue;
 }
 
 public void OnPluginStart()
 {
-    g_pPlayerSurvivedIncome = CreateConVar("sm_zombie_survived_income", "750", "Money when player survived", 0);
+    g_pPlayerSurvivedIncome = CreateConVar("sm_zombie_survived_income", "500", "Money when player survived", 0);
     g_pPlayerDeathIncome    = CreateConVar("sm_zombie_died_income", "750", "Money when player died", 0);
+    g_pPlayerHeadshotIncome    = CreateConVar("sm_zombie_headshot_income", "100", "Money when headshot", 0);
+    g_pPlayerBackblastIncome    = CreateConVar("sm_zombie_backblast_income", "1500", "Money when backblast", 0);
     HookEvent("player_death", Event_PlayerDeath, EventHookMode_Post);
 }

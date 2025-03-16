@@ -146,19 +146,33 @@ public int Native_GetZombiePhase(Handle plugin, int args)
 GlobalForward g_pZombieKilledForward;
 Action        Event_ZombieKilled(Handle event, const char[] name, bool dontBroadcast)
 {
-    int  zombie = GetEventInt(event, "entindex_killed");
-    char classname[64];
-    GetEntityClassname(zombie, classname, sizeof(classname));
-    if (!strncmp(classname, "nb_zombie", 9))
+    char othertype[64];
+    GetEventString(event, "othertype", othertype, sizeof(othertype));
+    if (!strncmp(othertype, "nb_zombie", 9))
     {
-        int attacker   = GetEventInt(event, "entindex_attacker");
-        int inflictor  = GetEventInt(event, "entindex_inflictor");
-        int damagebits = GetEventInt(event, "damagebits");
+        int  zombie = GetEventInt(event, "otherid");
+        int attacker   = GetClientOfUserId( GetEventInt(event, "attacker"));
+        char weaponname[64];
+        GetEventString(event, "weapon", weaponname, sizeof(weaponname));
+        char weapon_itemid[64];
+        GetEventString(event, "weapon_itemid", weapon_itemid, sizeof(weapon_itemid));
+        int damagebits = GetEventInt(event, "damagetype");
+        bool headshot = GetEventBool(event, "headshot");
+        bool backblast = GetEventBool(event, "backblast");
+        int penetrated = GetEventInt(event, "penetrated");
+        float killdistance = GetEventFloat(event, "killdistance");
+
         Call_StartForward(g_pZombieKilledForward);
         Call_PushCell(zombie);
+        Call_PushString(othertype);
         Call_PushCell(attacker);
-        Call_PushCell(inflictor);
+        Call_PushString(weaponname);
+        Call_PushString(weapon_itemid);
         Call_PushCell(damagebits);
+        Call_PushCell(headshot);
+        Call_PushCell(backblast);
+        Call_PushCell(penetrated);
+        Call_PushCell(killdistance);
         Call_Finish();
     }
     return Plugin_Continue;
@@ -170,10 +184,11 @@ public void OnPluginStart()
 
     g_pPhaseChangedForward = new GlobalForward("OnZombiePhaseChanged", ET_Ignore, Param_Cell);
 
-    g_pZombieKilledForward = new GlobalForward("OnZombieKilled", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    g_pZombieKilledForward = new GlobalForward("OnZombieKilled", ET_Ignore, Param_Cell, Param_String, Param_Cell, 
+                                                Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
     HookEvent("zm_phase_change", Event_PhaseChange, EventHookMode_Pre);
-    HookEvent("entity_killed", Event_ZombieKilled, EventHookMode_Post);
+    HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
 }
 
 public void OnPluginEnd()

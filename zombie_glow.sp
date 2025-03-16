@@ -15,7 +15,7 @@ public Plugin myinfo =
 
 ConVar g_pGlowCount;
 
-public void OnZombieKilled(int zombie, int attacker, int inflictor, int damagebits)
+public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name, char[] weapon_id, int damagebits, bool headshot, bool backblast, int penetrated, float killdistance)
 {
     int count = ZM_GetZombieCount();
     if (count <= g_pGlowCount.IntValue)
@@ -27,14 +27,16 @@ public void OnZombieKilled(int zombie, int attacker, int inflictor, int damagebi
             {
                 float org[3];
                 GetEntPropVector(z, Prop_Send, "m_vecOrigin", org);
-                Event event = CreateEvent("player_ping");
+                Event event = CreateEvent("airstrike_location");
                 if (event == null)
                     return;
-                event.SetInt("userid", 0);
-                event.SetInt("entityid", z);
+                event.SetInt("team", 0);
                 event.SetFloat("x", org[0]);
                 event.SetFloat("y", org[1]);
                 event.SetFloat("z", org[2]);
+                event.SetInt("type", 0);
+                event.SetFloat("timeduration", 1.5);
+                event.SetInt("calleridx", 1);
                 event.Fire();
             }
         }

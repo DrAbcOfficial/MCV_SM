@@ -58,7 +58,9 @@ forward void OnZombiePhaseChanged(int phase);
  */
 native int   ZM_GetPhase();
 
-forward void OnZombieKilled(int zombie, int attacker, int inflictor, int damagebits);
+forward void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name,
+                            char[] weapon_id, int damagebits, bool headshot, bool backblast,
+                            int penetrated, float killdistance);
 
 public SharedPlugin __pl_zombie_core = {
     name = "Zombie Core",
