@@ -1500,7 +1500,7 @@ void InitMenuItem()
 
 bool BuyCheck(int client)
 {
-    if(client < 0 || client > MaxClients)
+    if(client <= 0 || client > MaxClients)
         return false;
     if(!IsClientInGame(client))
         return false;
@@ -1548,7 +1548,8 @@ public void MenuHandler_Buy(Menu menu, MenuAction action, int client, int slot)
         }
 
         ZM_AddMoney(client, -info.price);
-        ZM_AddWeight(client, info.weight);
+        //会计算双倍负重
+        //ZM_AddWeight(client, info.weight);
         int weapon = CreateEntityByName(info.classname);
         DispatchSpawn(weapon);
         float org[3];
