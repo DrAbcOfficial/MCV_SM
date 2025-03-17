@@ -21,6 +21,10 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("ZM_SetMoney", Native_SetMoney);
     CreateNative("ZM_AddMoney", Native_AddMoney);
 
+    CreateNative("ZM_GetWeight", Native_GetWeight);
+    CreateNative("ZM_SetWeight", Native_SetWeight);
+    CreateNative("ZM_AddWeight", Native_AddWeight);
+
     CreateNative("ZM_GetZombieCount", Native_GetZombieCount);
     CreateNative("ZM_GetZombieByIndex", Native_GetZombieByIndex);
 
@@ -80,6 +84,45 @@ public int Native_AddMoney(Handle plugin, int args)
         int money = GetEntData(client, 0x21d8);
         int add   = GetNativeCell(2);
         SetEntData(client, 0x21d8, money + add);
+    }
+    return INVALID_ENT_REFERENCE;
+}
+
+// 玩家重量维护
+//undefined4 __thiscall CVietnam_Player::GetCarriedWeaponsWeight(CVietnam_Player *this)
+//{
+//  return *(undefined4 *)(this + 0x21dc);
+//}
+public int Native_GetWeight(Handle plugin, int args)
+{
+    int client = GetNativeCell(1);
+    if (NativeCheck_IsClientValid(client))
+    {
+        int weight = GetEntData(client, 0x21dc);
+        return weight;
+    }
+    return INVALID_ENT_REFERENCE;
+}
+
+public int Native_SetWeight(Handle plugin, int args)
+{
+    int client = GetNativeCell(1);
+    if (NativeCheck_IsClientValid(client))
+    {
+        int weight = GetNativeCell(2);
+        SetEntData(client, 0x21dc, weight);
+    }
+    return INVALID_ENT_REFERENCE;
+}
+
+public int Native_AddWeight(Handle plugin, int args)
+{
+    int client = GetNativeCell(1);
+    if (NativeCheck_IsClientValid(client))
+    {
+        int weight = GetEntData(client, 0x21dc);
+        int add   = GetNativeCell(2);
+        SetEntData(client, 0x21dc, weight + add);
     }
     return INVALID_ENT_REFERENCE;
 }

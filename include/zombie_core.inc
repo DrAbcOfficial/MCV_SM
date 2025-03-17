@@ -31,6 +31,31 @@ native void ZM_SetMoney(int client, int money);
 native void ZM_AddMoney(int client, int money);
 
 /**
+ * Get Client Weight
+ *
+ * @param client Client index
+ * @return client weight
+ * @error Invalid client.
+ */
+native int  ZM_GetWeight(int client);
+/**
+ * Set Client Money
+ *
+ * @param client Client index
+ * @param Weight Weight
+ * @error Invalid client.
+ */
+native void ZM_SetWeight(int client, int weight);
+/**
+ * Add Client Money
+ *
+ * @param client Client index
+ * @param Weight Weight
+ * @error Invalid client.
+ */
+native void ZM_AddWeight(int client, int weight);
+
+/**
  * Get Zombie Count
  *
  * @return Zombie Count
@@ -79,6 +104,9 @@ public __pl_zombie_core_SetNTVOptional()
     MarkNativeAsOptional("ZM_GetMoney");
     MarkNativeAsOptional("ZM_SetMoney");
     MarkNativeAsOptional("ZM_AddMoney");
+    MarkNativeAsOptional("ZM_GetWeight");
+    MarkNativeAsOptional("ZM_SetWeight");
+    MarkNativeAsOptional("ZM_AddWeight");
     MarkNativeAsOptional("ZM_GetZombieCount");
     MarkNativeAsOptional("ZM_GetZombieByIndex");
     MarkNativeAsOptional("ZM_GetPhase");
