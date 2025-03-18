@@ -234,7 +234,14 @@ public void OnPluginStart()
     HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
 }
 
+public void OnMapStart()
+{
+    g_aryZombies.Clear();
+}
+
 public void OnPluginEnd()
 {
     g_aryZombies.Clear();
+    g_pPhaseChangedForward.Close();
+    g_pZombieKilledForward.Close();
 }

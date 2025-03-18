@@ -1594,3 +1594,11 @@ public void OnPluginStart()
 
     RegConsoleCmd("sm_zombie_buy", Command_OpenMenu, "Open Buy Menu");
 }
+
+public void OnPluginEnd()
+{
+    g_dicMenus.Clear();
+    g_dicMenus.Close();
+    g_pRoot.Close();
+    g_pMaxWeight.Close();
+}

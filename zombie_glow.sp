@@ -27,16 +27,15 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
             {
                 float org[3];
                 GetEntPropVector(z, Prop_Send, "m_vecOrigin", org);
-                Event event = CreateEvent("airstrike_location");
+                Event event = CreateEvent("player_voicecommand");
                 if (event == null)
                     return;
-                event.SetInt("team", 0);
-                event.SetFloat("x", org[0]);
-                event.SetFloat("y", org[1]);
-                event.SetFloat("z", org[2]);
-                event.SetInt("type", 0);
-                event.SetFloat("timeduration", 1.5);
-                event.SetInt("calleridx", 1);
+                event.SetInt("userid", 0);
+                event.SetInt("commandindex", 0);
+                event.SetInt("enemyuserid", z);
+                event.SetFloat("targetPosX", org[0]);
+                event.SetFloat("targetPosY", org[1]);
+                event.SetFloat("targetPosZ", org[2]);
                 event.Fire();
             }
         }
@@ -46,4 +45,9 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
 public void OnPluginStart()
 {
     g_pGlowCount = CreateConVar("sm_zombie_glow_count", "15", "Count that zombie mark glow", 0);
+}
+
+public void OnPluginEnd()
+{
+    g_pGlowCount.Close();
 }

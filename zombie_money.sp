@@ -73,3 +73,12 @@ public void OnPluginStart()
     g_pPlayerBackblastIncome    = CreateConVar("sm_zombie_backblast_income", "1500", "Money when backblast", 0);
     HookEvent("player_death", Event_PlayerDeath, EventHookMode_Post);
 }
+
+public void OnPluginEnd()
+{
+    g_pPlayerSurvivedIncome.Close();
+    g_pPlayerDeathIncome.Close();
+    g_pPlayerHeadshotIncome.Close();
+    g_pPlayerBackblastIncome.Close();
+    UnhookEvent("player_death", Event_PlayerDeath, EventHookMode_Post);
+}

@@ -18,7 +18,7 @@ public Action Command_Nuke(int client, int args)
     for (int i = 0; i < ZM_GetZombieCount(); i++)
     {
         int zb = ZM_GetZombieByIndex(i);
-        SDKHooks_TakeDamage(zb, zb, zb, 999999999.0);
+        SDKHooks_TakeDamage(zb, 0, 0, 999999999.0);
     }
     PrintToChatAll("[MCV]核平了所有僵尸....");
     return Plugin_Handled;
