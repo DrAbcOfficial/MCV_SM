@@ -5,7 +5,7 @@ public Plugin myinfo =
 {
     name        = "Model menu",
     author      = "Dr.Abc",
-    description = "Model menu",
+    description = "僵尸特化人物菜单二代",
     version     = "Model menu",
     url         = "Model menu"
 };
@@ -33,15 +33,19 @@ void ChangePlayerModel(int client, char[] model)
 {
     if (IsValidClient(client) && IsPlayerAlive(client))
     {
+        // static int table = INVALID_STRING_TABLE;
+        // if (table == INVALID_STRING_TABLE)
+        //     table = FindStringTable("modelprecache");
+        // bool save = LockStringTables(false);
+        // int modelidx = FindStringIndex(table, model);
+        // LockStringTables(save);
+        // SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
+        // SetEntProp(client, Prop_Send, "m_nBody", 0);
+        
+        SetEntityModel(client, model);
+        SetEntityRenderColor(client, 255, 255, 255, 255);
+        SetEntProp(client, Prop_Send, "m_nBody", 0);
 
-        static int table = INVALID_STRING_TABLE;
-        if (table == INVALID_STRING_TABLE)
-            table = FindStringTable("modelprecache");
-        bool save = LockStringTables(false);
-        int modelidx = FindStringIndex(table, model);
-        LockStringTables(save);
-        SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
-        //SetEntityModel(client, model);
         int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
         if (team == 3)
         {
@@ -149,17 +153,20 @@ public Action Command_ReloadCfg(int client, int args)
 
 public void MenuHandler_ChangeModel(Menu menu, MenuAction action, int client, int slot)
 {
-    if (action == MenuAction_Select)
+    if(action == MenuAction_Cancel)
+        g_pRootMenu.Display(client, 60);
+    else if (action == MenuAction_Select)
     {
         char info[PLATFORM_MAX_PATH];
         char display[64];
         int  style;
         menu.GetItem(slot, info, sizeof(info), style, display, sizeof(display));
 
-        ChangePlayerModel(client, info);
         char steamid[64];
         GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
         g_dicPlayerModels.SetString(steamid, info, true);
+
+        ChangePlayerModel(client, info);
         PrintToChat(client, "你正在使用\x03 %s", display);
     }
 }
@@ -205,17 +212,17 @@ Action Event_PlayerSpawnAndClass(Handle event, const char[] name, bool dontBroad
     int  client = GetClientOfUserId(GetEventInt(event, "userid"));
     char steamid[64];
     GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
-    if (g_dicPlayerModels.ContainsKey(steamid))
-    {
-        CreateTimer(0.1, Timer_LazyChangePlayerModel, client);
-    }
-    else if (IsFakeClient(client))
+    if (IsFakeClient(client))
     {
         int rand = GetRandomInt(0, 100);
         if (rand > 50)
         {
             CreateTimer(0.1, Timer_LazyBOTChangePlayerModel, client);
         }
+    }
+    else if (g_dicPlayerModels.ContainsKey(steamid))
+    {
+        CreateTimer(0.1, Timer_LazyChangePlayerModel, client);
     }
     return Plugin_Handled;
 }

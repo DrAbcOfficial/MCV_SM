@@ -1521,7 +1521,9 @@ public void MenuHandler_Buy(Menu menu, MenuAction action, int client, int slot)
 {
     if(!BuyCheck(client))
         return;
-    if (action == MenuAction_Select)
+    if(action == MenuAction_Cancel)
+        g_pRoot.Display(client, 60);
+    else if (action == MenuAction_Select)
     {
         char infobuf[8];
         menu.GetItem(slot, infobuf, sizeof(infobuf));
