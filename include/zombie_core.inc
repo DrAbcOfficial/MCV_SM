@@ -88,6 +88,9 @@ forward void OnZombieSpawned(int zombie);
 forward void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name,
                             char[] weapon_id, int damagebits, bool headshot, bool backblast,
                             int penetrated, float killdistance);
+forward void OnZombieKilledPost(int zombie, char[] classname, int attacker, char[] weapon_name,
+                            char[] weapon_id, int damagebits, bool headshot, bool backblast,
+                            int penetrated, float killdistance);
                             
 
 public SharedPlugin __pl_zombie_core = {

@@ -150,26 +150,12 @@ char g_aryYYDZ[][] = {
     "尹悦"
 };
 
-Action Event_ZombieKilled(Handle event, const char[] name, bool dontBroadcast)
-{
-    char othertype[64];
-    GetEventString(event, "othertype", othertype, sizeof(othertype));
-    if (!strncmp(othertype, "nb_zombie", 9))
-    {
+
+void OnZombieKilledPost(int zombie, char[] classname, int attacker, char[] weapon_name,
+                            char[] weapon_id, int damagebits, bool headshot, bool backblast,
+                            int penetrated, float killdistance){
         int random = GetRandomInt(0, sizeof(g_aryYYDZ) - 1);
         char yydz[16];
         Format(yydz, sizeof(yydz), "%s顶针", g_aryYYDZ[random]);
-        SetEventString(event, "othertype", yydz);
-    }
-    return Plugin_Continue;
-}
-
-public void OnPluginStart()
-{
-    HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
-}
-
-public void OnPluginEnd()
-{
-    UnhookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
+        strcopy(classname, sizeof(classname), yydz);
 }

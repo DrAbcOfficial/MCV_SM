@@ -198,6 +198,7 @@ public int Native_GetZombiePhase(Handle plugin, int args)
 
 // 僵尸死亡forward
 GlobalForward g_pZombieKilledForward;
+GlobalForward g_pZombieKilledPostForward;
 Action        Event_ZombieKilled(Handle event, const char[] name, bool dontBroadcast)
 {
     char othertype[64];
@@ -228,6 +229,19 @@ Action        Event_ZombieKilled(Handle event, const char[] name, bool dontBroad
         Call_PushCell(penetrated);
         Call_PushCell(killdistance);
         Call_Finish();
+
+        Call_StartForward(g_pZombieKilledPostForward);
+        Call_PushCell(zombie);
+        Call_PushStringEx(othertype, sizeof(othertype), SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+        Call_PushCell(attacker);
+        Call_PushStringEx(weaponname, sizeof(weaponname), SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+        Call_PushStringEx(weapon_itemid, sizeof(weapon_itemid), SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+        Call_PushCell(damagebits);
+        Call_PushCell(headshot);
+        Call_PushCell(backblast);
+        Call_PushCell(penetrated);
+        Call_PushCell(killdistance);
+        Call_Finish();
     }
     return Plugin_Continue;
 }
@@ -241,6 +255,8 @@ public void OnPluginStart()
     g_pPhaseChangedForward = new GlobalForward("OnZombiePhaseChanged", ET_Ignore, Param_Cell);
 
     g_pZombieKilledForward = new GlobalForward("OnZombieKilled", ET_Ignore, Param_Cell, Param_String, Param_Cell,
+                                               Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    g_pZombieKilledPostForward = new GlobalForward("OnZombieKilledPost", ET_Ignore, Param_CellRef, Param_String, Param_Cell,
                                                Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
     HookEvent("zm_phase_change", Event_PhaseChange, EventHookMode_Pre);
