@@ -263,7 +263,7 @@ public void OnPluginStart()
     HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
 }
 
-public void OnMapStart()
+public void OnMapInit(const char[] mapName)
 {
     for (int i = 0; i < g_aryZombies.Length; i++)
     {
