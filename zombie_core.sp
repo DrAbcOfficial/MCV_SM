@@ -89,7 +89,7 @@ public int Native_AddMoney(Handle plugin, int args)
 }
 
 // 玩家重量维护
-//undefined4 __thiscall CVietnam_Player::GetCarriedWeaponsWeight(CVietnam_Player *this)
+// undefined4 __thiscall CVietnam_Player::GetCarriedWeaponsWeight(CVietnam_Player *this)
 //{
 //  return *(undefined4 *)(this + 0x21dc);
 //}
@@ -121,13 +121,13 @@ public int Native_AddWeight(Handle plugin, int args)
     if (NativeCheck_IsClientValid(client))
     {
         int weight = GetEntData(client, 0x21dc);
-        int add   = GetNativeCell(2);
+        int add    = GetNativeCell(2);
         SetEntData(client, 0x21dc, weight + add);
     }
     return INVALID_ENT_REFERENCE;
 }
 
-// 僵尸列表维护
+// 僵尸列表维护及僵尸Spawn Forward
 ArrayList g_aryZombies;
 
 public int Native_GetZombieCount(Handle plugin, int args)
@@ -144,11 +144,21 @@ public int Native_GetZombieByIndex(Handle plugin, int args)
     return zombie;
 }
 
+GlobalForward g_pZombieSpawnForward;
+
+public void ZombieSpawn_Post(int entity)
+{
+    Call_StartForward(g_pZombieSpawnForward);
+    Call_PushCell(entity);
+    Call_Finish();
+}
+
 public void OnEntityCreated(int entity, const char[] classname)
 {
     if (!strncmp(classname, "nb_zombie", 9, false))
     {
         g_aryZombies.Push(entity);
+        SDKHook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
     }
 }
 
@@ -158,6 +168,7 @@ public void OnEntityDestroyed(int entity)
     {
         if (g_aryZombies.Get(i) == entity)
         {
+            SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
             g_aryZombies.Erase(i);
             return;
         }
@@ -193,16 +204,16 @@ Action        Event_ZombieKilled(Handle event, const char[] name, bool dontBroad
     GetEventString(event, "othertype", othertype, sizeof(othertype));
     if (!strncmp(othertype, "nb_zombie", 9))
     {
-        int  zombie = GetEventInt(event, "otherid");
-        int attacker   = GetClientOfUserId( GetEventInt(event, "attacker"));
+        int  zombie   = GetEventInt(event, "otherid");
+        int  attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
         char weaponname[64];
         GetEventString(event, "weapon", weaponname, sizeof(weaponname));
         char weapon_itemid[64];
         GetEventString(event, "weapon_itemid", weapon_itemid, sizeof(weapon_itemid));
-        int damagebits = GetEventInt(event, "damagetype");
-        bool headshot = GetEventBool(event, "headshot");
-        bool backblast = GetEventBool(event, "backblast");
-        int penetrated = GetEventInt(event, "penetrated");
+        int   damagebits   = GetEventInt(event, "damagetype");
+        bool  headshot     = GetEventBool(event, "headshot");
+        bool  backblast    = GetEventBool(event, "backblast");
+        int   penetrated   = GetEventInt(event, "penetrated");
         float killdistance = GetEventFloat(event, "killdistance");
 
         Call_StartForward(g_pZombieKilledForward);
@@ -225,16 +236,33 @@ public void OnPluginStart()
 {
     g_aryZombies           = new ArrayList();
 
+    g_pZombieSpawnForward  = new GlobalForward("OnZombieSpawned", ET_Ignore, Param_Cell);
+
     g_pPhaseChangedForward = new GlobalForward("OnZombiePhaseChanged", ET_Ignore, Param_Cell);
 
-    g_pZombieKilledForward = new GlobalForward("OnZombieKilled", ET_Ignore, Param_Cell, Param_String, Param_Cell, 
-                                                Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    g_pZombieKilledForward = new GlobalForward("OnZombieKilled", ET_Ignore, Param_Cell, Param_String, Param_Cell,
+                                               Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
     HookEvent("zm_phase_change", Event_PhaseChange, EventHookMode_Pre);
     HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
 }
 
+public void OnMapStart()
+{
+    for (int i = 0; i < g_aryZombies.Length; i++)
+    {
+        SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
+    }
+    g_aryZombies.Clear();
+}
+
 public void OnPluginEnd()
 {
+    for (int i = 0; i < g_aryZombies.Length; i++)
+    {
+        SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
+    }
     g_aryZombies.Clear();
+    g_pPhaseChangedForward.Close();
+    g_pZombieKilledForward.Close();
 }
