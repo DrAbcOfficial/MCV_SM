@@ -151,11 +151,11 @@ char g_aryYYDZ[][] = {
 };
 
 
-void OnZombieKilledPost(int zombie, char[] classname, int attacker, char[] weapon_name,
+public void OnZombieKilledPost(int zombie, char[] classname, int attacker, char[] weapon_name,
                             char[] weapon_id, int damagebits, bool headshot, bool backblast,
                             int penetrated, float killdistance){
         int random = GetRandomInt(0, sizeof(g_aryYYDZ) - 1);
         char yydz[16];
         Format(yydz, sizeof(yydz), "%s顶针", g_aryYYDZ[random]);
-        strcopy(classname, sizeof(classname), yydz);
+        strcopy(classname, 64, yydz);
 }

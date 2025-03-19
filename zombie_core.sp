@@ -256,7 +256,7 @@ public void OnPluginStart()
 
     g_pZombieKilledForward = new GlobalForward("OnZombieKilled", ET_Ignore, Param_Cell, Param_String, Param_Cell,
                                                Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    g_pZombieKilledPostForward = new GlobalForward("OnZombieKilledPost", ET_Ignore, Param_CellRef, Param_String, Param_Cell,
+    g_pZombieKilledPostForward = new GlobalForward("OnZombieKilledPost", ET_Ignore, Param_Cell, Param_String, Param_Cell,
                                                Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
     HookEvent("zm_phase_change", Event_PhaseChange, EventHookMode_Pre);
