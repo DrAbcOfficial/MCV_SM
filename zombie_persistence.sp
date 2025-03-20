@@ -1,7 +1,7 @@
 #include <sdkhooks>
 #include <zombie_core>
 
-#define PLUGIN_NAME        "Zombie Nuke"
+#define PLUGIN_NAME        "Zombie Persistence"
 #define PLUGIN_DESCRIPTION "全新僵尸持续王一代"
 
 // ridiculous, If a player exits and re enters with a different userid, he will lose his money
