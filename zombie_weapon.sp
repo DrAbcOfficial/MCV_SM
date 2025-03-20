@@ -1553,6 +1553,9 @@ public void MenuHandler_Buy(Menu menu, MenuAction action, int client, int slot)
         //会计算双倍负重
         //ZM_AddWeight(client, info.weight);
         int weapon = CreateEntityByName(info.classname);
+        //Do not respawn
+        DispatchKeyValue(weapon, "spawnflags", "1073741824");
+        DispatchKeyValue(weapon, "CanBePickedUp", "1");
         DispatchSpawn(weapon);
         float org[3];
         GetClientAbsOrigin(client, org);
