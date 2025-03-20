@@ -39,9 +39,10 @@ Action    OnCashTouched(int entity, int other)
 
 public void OnEntityDestroyed(int entity)
 {
-    if (g_aryCashed.FindValue(entity) != -1)
+    int index = g_aryCashed.FindValue(entity);
+    if (index != -1)
     {
-        g_aryCashed.Erase(entity);
+        g_aryCashed.Erase(index);
         SDKUnhook(entity, SDKHook_Touch, OnCashTouched);
     }
 }
