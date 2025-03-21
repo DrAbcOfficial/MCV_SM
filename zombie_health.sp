@@ -69,7 +69,7 @@ public void OnZombieSpawned(int zombie)
         if (ZM_IsClientValid(i) && GetClientTeam(i) > 1)
             amout++;
     }
-    float ratio = g_pBaseRatio.FloatValue;
+    float ratio = 1.0;
     int   base  = 0;
     switch (type)
     {
@@ -146,7 +146,7 @@ public void OnZombieSpawned(int zombie)
         }
     }
 
-    float health = base * ratio;
+    float health = base * ratio * g_pBaseRatio.FloatValue;
     SetEntityHealth(zombie, RoundFloat(health));
 }
 
