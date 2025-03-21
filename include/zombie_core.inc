@@ -88,7 +88,7 @@ native int   ZM_GetPhase();
  *
  * @return zombie entity index
  */
-native int ZM_GetCashCount();
+native int   ZM_GetCashCount();
 /**
  * Get Case entity By Index
  *
@@ -96,7 +96,7 @@ native int ZM_GetCashCount();
  * @return cash entity index
  * @error Invalid index.
  */
-native int ZM_GetCashByIndex(int index);
+native int   ZM_GetCashByIndex(int index);
 /**
  * Create cash entity
  *
@@ -107,8 +107,8 @@ native int ZM_GetCashByIndex(int index);
  * @param vec velocity
  * @return cash entity index
  */
-native int ZM_CreateCash(int owner, int count, const float[] org, 
-                          const float[] ang, const float[] vec);
+native int   ZM_CreateCash(int owner, int count, const float org[3],
+                           const float ang[3], const float vec[3]);
 
 forward void OnZombieSpawned(int zombie);
 
@@ -116,8 +116,8 @@ forward void OnZombieKilled(int zombie, char[] classname, int attacker, char[] w
                             char[] weapon_id, int damagebits, bool headshot, bool backblast,
                             int penetrated, float killdistance);
 forward void OnZombieKilledPost(int zombie, char[] classname, int attacker, char[] weapon_name,
-                            char[] weapon_id, int damagebits, bool headshot, bool backblast,
-                            int penetrated, float killdistance);
+                                char[] weapon_id, int damagebits, bool headshot, bool backblast,
+                                int penetrated, float killdistance);
 forward void OnCashPickup(int cash, int other, int& owner, int& count);
 /**
  * Is player valid?
@@ -125,9 +125,9 @@ forward void OnCashPickup(int cash, int other, int& owner, int& count);
  * @param client client index
  * @return true or false
  */
-stock bool ZM_IsClientValid(int client)
+stock bool   ZM_IsClientValid(int client)
 {
-    if(!IsValidEntity(client))
+    if (!IsValidEntity(client))
         return false;
     if (client <= 0 || client > MaxClients)
         return false;
@@ -136,21 +136,21 @@ stock bool ZM_IsClientValid(int client)
     return true;
 }
 
-#define ZOMBIE_TYPE_INVALID -1
-#define ZOMBIE_TYPE_NORNAML 0
-#define ZOMBIE_TYPE_ARMOR 1
-#define ZOMBIE_TYPE_BLOAT 2
-#define ZOMBIE_TYPE_BOMBER 3
-#define ZOMBIE_TYPE_BUFFALO 4
-#define ZOMBIE_TYPE_BURNING 5
-#define ZOMBIE_TYPE_CROW 6
-#define ZOMBIE_TYPE_DOG 7
-#define ZOMBIE_TYPE_GUN 8
-#define ZOMBIE_TYPE_HAVOC 9
-#define ZOMBIE_TYPE_ORANGE 10
-#define ZOMBIE_TYPE_RANGED 11
-#define ZOMBIE_TYPE_SCREAMER 12
-#define ZOMBIE_TYPE_SLASHER 13
+#define ZOMBIE_TYPE_INVALID  -1
+#define ZOMBIE_TYPE_CROW     0
+#define ZOMBIE_TYPE_NORNAML  1
+#define ZOMBIE_TYPE_ARMOR    2
+#define ZOMBIE_TYPE_BLOAT    3
+#define ZOMBIE_TYPE_DOG      4
+#define ZOMBIE_TYPE_SLASHER  5
+#define ZOMBIE_TYPE_BURNING  6
+#define ZOMBIE_TYPE_RANGED   7
+#define ZOMBIE_TYPE_BOMBER   8
+#define ZOMBIE_TYPE_SCREAMER 9
+#define ZOMBIE_TYPE_GUN      10
+#define ZOMBIE_TYPE_BUFFALO  11
+#define ZOMBIE_TYPE_ORANGE   12
+#define ZOMBIE_TYPE_HAVOC    13
 
 /**
  * get zombie type by entity
@@ -161,37 +161,41 @@ stock bool ZM_IsClientValid(int client)
 // this is stupid
 stock int ZM_GetZombieType(int zombie)
 {
-    if(!IsValidEntity(zombie))
+    if (!IsValidEntity(zombie))
         return ZOMBIE_TYPE_INVALID;
+    // Get type
+    //  vtable + 0xBB0
+    //  uint64 CBaseZombieCharacter::GetZombieType()
+    //  fuck, sdk call is invalid for mcv, i cant call virtual function directly
     char buffer[64];
     GetEntityClassname(zombie, buffer, sizeof(buffer));
-    if(!strcmp(buffer, "nb_zombie"))
+    if (!strcmp(buffer, "nb_zombie"))
         return ZOMBIE_TYPE_NORNAML;
-    else if(!strcmp(buffer, "nb_zombie_armor"))
+    else if (!strcmp(buffer, "nb_zombie_armor"))
         return ZOMBIE_TYPE_ARMOR;
-    else if(!strcmp(buffer, "nb_zombie_bloat"))
+    else if (!strcmp(buffer, "nb_zombie_bloat"))
         return ZOMBIE_TYPE_BLOAT;
-    else if(!strcmp(buffer, "nb_zombie_bomber"))
+    else if (!strcmp(buffer, "nb_zombie_bomber"))
         return ZOMBIE_TYPE_BOMBER;
-    else if(!strcmp(buffer, "nb_zombie_buffalo"))
+    else if (!strcmp(buffer, "nb_zombie_buffalo"))
         return ZOMBIE_TYPE_BUFFALO;
-    else if(!strcmp(buffer, "nb_zombie_burn"))
+    else if (!strcmp(buffer, "nb_zombie_burning"))
         return ZOMBIE_TYPE_BURNING;
-    else if(!strcmp(buffer, "nb_zombie_crow"))
+    else if (!strcmp(buffer, "nb_zombie_crow"))
         return ZOMBIE_TYPE_CROW;
-    else if(!strcmp(buffer, "nb_zombie_dog"))
+    else if (!strcmp(buffer, "nb_zombie_dog"))
         return ZOMBIE_TYPE_DOG;
-    else if(!strcmp(buffer, "nb_zombie_gun"))
+    else if (!strcmp(buffer, "nb_zombie_gun"))
         return ZOMBIE_TYPE_GUN;
-    else if(!strcmp(buffer, "nb_zombie_havoc"))
+    else if (!strcmp(buffer, "nb_zombie_havoc"))
         return ZOMBIE_TYPE_HAVOC;
-    else if(!strcmp(buffer, "nb_zombie_orange"))
+    else if (!strcmp(buffer, "nb_zombie_orange"))
         return ZOMBIE_TYPE_ORANGE;
-    else if(!strcmp(buffer, "nb_zombie_range"))
+    else if (!strcmp(buffer, "nb_zombie_ranged"))
         return ZOMBIE_TYPE_RANGED;
-    else if(!strcmp(buffer, "nb_zombie_screamer"))
+    else if (!strcmp(buffer, "nb_zombie_screamer"))
         return ZOMBIE_TYPE_SCREAMER;
-    else if(!strcmp(buffer, "nb_zombie_slasher"))
+    else if (!strcmp(buffer, "nb_zombie_slasher"))
         return ZOMBIE_TYPE_SLASHER;
     return ZOMBIE_TYPE_INVALID;
 }

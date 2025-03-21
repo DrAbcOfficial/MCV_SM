@@ -5,7 +5,6 @@
 #define PLUGIN_DESCRIPTION "全新僵尸持续王一代"
 
 // ridiculous, If a player exits and re enters with a different userid, he will lose his money
-
 public Plugin myinfo =
 {
     name        = PLUGIN_NAME,
@@ -38,7 +37,7 @@ public void OnClientPutInServer(int client)
 {
     char buffer[64];
     GetClientAuthId(client, AuthId_SteamID64, buffer, sizeof(buffer));
-    if(g_dicPlayerMoneys.ContainsKey(buffer))
+    if (g_dicPlayerMoneys.ContainsKey(buffer))
     {
         int money = 0;
         g_dicPlayerMoneys.GetValue(buffer, money);

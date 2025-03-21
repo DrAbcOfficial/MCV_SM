@@ -5,7 +5,6 @@
 
 #define PLUGIN_NAME        "Zombie DropCash"
 #define PLUGIN_DESCRIPTION "全新僵尸丢钱王二代"
-#define CASH_MODEL         "models/entities/money_pack.mdl"
 
 public Plugin myinfo =
 {
@@ -17,12 +16,12 @@ public Plugin myinfo =
 };
 
 ArrayList g_aryCashed;
-ConVar g_pCashCount;
+ConVar    g_pCashCount;
 
-void OnCashPickup(int cash, int other, int& owner, int& count)
+public void OnCashPickup(int cash, int other, int& owner, int& count)
 {
     int index = g_aryCashed.FindValue(cash);
-    if(index != -1)
+    if (index != -1)
     {
         if (other != owner && ZM_IsClientValid(owner))
         {
@@ -84,7 +83,7 @@ public void MapInit(const char[] mapname)
 
 public void OnPluginStart()
 {
-    g_aryCashed = new ArrayList();
+    g_aryCashed  = new ArrayList();
     g_pCashCount = CreateConVar("sm_zombie_default_cash_count", "500", "Default count for drop cash", 0);
     RegConsoleCmd("sm_zombie_dropcash", Command_DropMoney, "Drop money");
     HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);

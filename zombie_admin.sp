@@ -83,7 +83,7 @@ public void MenuHandler_GiveMoneyOne(Menu menu, MenuAction action, int client, i
     {
         char index[32];
         menu.GetItem(0, index, sizeof(index));
-        int i = StringToInt(index);
+        int  i = StringToInt(index);
         char buffer[64];
         menu.GetItem(slot, buffer, sizeof(buffer));
         int money = StringToInt(buffer);
@@ -96,25 +96,25 @@ public void MenuHandler_GiveMoneyOne(Menu menu, MenuAction action, int client, i
 
 public void MenuHandler_GiveMoney(Menu menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_End)
-		delete menu;
-	else if (action == MenuAction_Select)
-	{
-		char info[32], name[32];
-		int userid, target;
+    if (action == MenuAction_End)
+        delete menu;
+    else if (action == MenuAction_Select)
+    {
+        char info[32], name[32];
+        int  userid, target;
 
-		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
-		userid = StringToInt(info);
+        menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
+        userid = StringToInt(info);
 
-		if ((target = GetClientOfUserId(userid)) == 0)
-			PrintToChat(param1, "[SM] 该玩家已不可用");
-		else if (!CanUserTarget(param1, target))
-			PrintToChat(param1, "[SM] 该玩家无法作为目标");
-		else
-		{
+        if ((target = GetClientOfUserId(userid)) == 0)
+            PrintToChat(param1, "[SM] 该玩家已不可用");
+        else if (!CanUserTarget(param1, target))
+            PrintToChat(param1, "[SM] 该玩家无法作为目标");
+        else
+        {
             char index[32];
             IntToString(target, index, sizeof(index));
-			Menu smenu = new Menu(MenuHandler_GiveMoneyOne);
+            Menu smenu = new Menu(MenuHandler_GiveMoneyOne);
             smenu.SetTitle("打多少钱");
             smenu.AddItem(index, name, ITEMDRAW_DISABLED);
             smenu.AddItem("10", "10块");
@@ -125,8 +125,8 @@ public void MenuHandler_GiveMoney(Menu menu, MenuAction action, int param1, int 
             smenu.AddItem("5000", "5000块");
             smenu.AddItem("10000", "10000块");
             smenu.Display(param1, MENU_TIME_FOREVER);
-		}
-	}
+        }
+    }
 }
 
 public void AdminMenu_MoneyOne(TopMenu topmenu, TopMenuAction action, TopMenuObject object_id,

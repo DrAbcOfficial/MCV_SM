@@ -17,7 +17,7 @@ public void OnZombieSpawned(int zombie)
 {
     char classname[64];
     GetEntityClassname(zombie, classname, sizeof(classname));
-    if(!strcmp(classname, "nb_zombie_crow"))
+    if (!strcmp(classname, "nb_zombie_crow"))
     {
         DispatchKeyValue(zombie, "mins", "-16 -16 -16");
         DispatchKeyValue(zombie, "maxs", "16 16 16");

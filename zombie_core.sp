@@ -195,12 +195,14 @@ Action        Event_ZombieKilled(Handle event, const char[] name, bool dontBroad
 }
 
 //金币创建及PickupForward
-#define CASH_MODEL         "models/entities/money_pack.mdl"
+#define CASH_MODEL "models/entities/money_pack.mdl"
 ArrayList g_aryCashes;
+
 public int Native_GetCashCount(Handle plugin, int args)
 {
     return g_aryCashes.Length;
 }
+
 public int Native_GetCashByIndex(Handle plugin, int args)
 {
     int index = GetNativeCell(1);
@@ -210,9 +212,8 @@ public int Native_GetCashByIndex(Handle plugin, int args)
     return c;
 }
 GlobalForward g_pCashPickupForward;
-Action    OnCashTouched(int entity, int other)
+Action        OnCashTouched(int entity, int other)
 {
-    
     if (other > 0 && other <= MaxClients && ZM_IsClientValid(other))
     {
         int owner = GetEntProp(entity, Prop_Send, "m_hOwnerEntity");
@@ -230,17 +231,17 @@ Action    OnCashTouched(int entity, int other)
     }
     return Plugin_Handled;
 }
-//native int ZM_CreateCash(int owner, int count, const float[] org, 
-//                          const float[] ang, const float[] vec)
+// native int ZM_CreateCash(int owner, int count, const float[] org,
+//                           const float[] ang, const float[] vec)
 public int Native_CreateCash(Handle plugin, int args)
 {
-    int owner = GetNativeCell(1);
-    int count = GetNativeCell(2);
-    float[] org = new float[3];
+    int   owner = GetNativeCell(1);
+    int   count = GetNativeCell(2);
+    float org[3];
     GetNativeArray(3, org, 3);
-    float[] ang = new float[3];
+    float ang[3];
     GetNativeArray(4, ang, 3);
-    float[] vec = new float[3];
+    float vec[3];
     GetNativeArray(5, vec, 3);
 
     int cash = CreateEntityByName("physics_prop");
@@ -250,7 +251,7 @@ public int Native_CreateCash(Handle plugin, int args)
     DispatchKeyValue(cash, "mins", "-16 -16 -24");
     DispatchKeyValue(cash, "maxs", "16 16 24");
     DispatchSpawn(cash);
-    if(IsValidEntity(owner))
+    if (IsValidEntity(owner))
     {
         SetEntProp(cash, Prop_Send, "m_hOwnerEntity", owner);
         SetEntityOwner(cash, owner);
@@ -259,9 +260,6 @@ public int Native_CreateCash(Handle plugin, int args)
     SetEntPropFloat(cash, Prop_Send, "m_flModelScale", 1.3);
     TeleportEntity(cash, org, ang, vec);
     SDKHook(cash, SDKHook_Touch, OnCashTouched);
-    delete org;
-    delete ang;
-    delete vec;
     return cash;
 }
 
@@ -279,6 +277,7 @@ void ClearCache()
     g_aryCashes.Clear();
     g_aryZombies.Clear();
 }
+
 public void OnEntityCreated(int entity, const char[] classname)
 {
     if (!strncmp(classname, "nb_zombie", 9, false))
@@ -291,7 +290,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 public void OnEntityDestroyed(int entity)
 {
     int z = g_aryZombies.FindValue(entity);
-    if(z != -1)
+    if (z != -1)
     {
         SDKUnhook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
         g_aryZombies.Erase(z);
@@ -340,8 +339,8 @@ public void OnPluginStart()
                                                    Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_pZombieKilledPostForward = new GlobalForward("OnZombieKilledPost", ET_Ignore, Param_Cell, Param_String, Param_Cell,
                                                    Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    g_pCashPickupForward = new GlobalForward("OnCashPickup", ET_Ignore, Param_Cell, Param_Cell, Param_CellByRef, Param_CellByRef);
-    
+    g_pCashPickupForward       = new GlobalForward("OnCashPickup", ET_Ignore, Param_Cell, Param_Cell, Param_CellByRef, Param_CellByRef);
+
     HookEvent("zm_phase_change", Event_PhaseChange, EventHookMode_Pre);
     HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
 }

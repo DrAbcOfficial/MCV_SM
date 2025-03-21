@@ -26,7 +26,7 @@ CWeaponInfo g_aryWeaponInfos[240];
 
 StringMap   g_dicMenus;
 Menu        g_pRoot;
-ConVar g_pMaxWeight;
+ConVar      g_pMaxWeight;
 
 void        InitWeaponInfos()
 {
@@ -1479,12 +1479,12 @@ void InitMenuItem()
         strcopy(info.category, sizeof(info.category), g_aryWeaponInfos[i].category);
         strcopy(info.classname, sizeof(info.classname), g_aryWeaponInfos[i].classname);
         strcopy(info.display, sizeof(info.display), g_aryWeaponInfos[i].display);
-        info.price = g_aryWeaponInfos[i].price;
+        info.price  = g_aryWeaponInfos[i].price;
         info.weight = g_aryWeaponInfos[i].weight;
-        Menu        menu;
+        Menu menu;
         if (g_dicMenus.ContainsKey(info.category))
             g_dicMenus.GetValue(info.category, menu);
-        else{
+        else {
             menu = new Menu(MenuHandler_Buy);
             menu.SetTitle(info.category);
             g_pRoot.AddItem(info.category, info.category);
@@ -1494,20 +1494,20 @@ void InitMenuItem()
         IntToString(i, index, sizeof(index));
         char menu_display[64];
         Format(menu_display, sizeof(menu_display), "%s - %d | %d", info.display, info.price, info.weight)
-        menu.AddItem(index, menu_display);
+            menu.AddItem(index, menu_display);
     }
 }
 
 bool BuyCheck(int client)
 {
-    if(!ZM_IsClientValid(client))
+    if (!ZM_IsClientValid(client))
         return false;
-    if(!IsPlayerAlive(client))
+    if (!IsPlayerAlive(client))
     {
         PrintToChat(client, "你已经是个死人了。");
         return false;
     }
-    if(ZM_GetPhase() != ZM_PHASE_WAITING)
+    if (ZM_GetPhase() != ZM_PHASE_WAITING)
     {
         PrintToChat(client, "战斗已经开始，你不能再购买装备。");
         return false;
@@ -1517,9 +1517,9 @@ bool BuyCheck(int client)
 
 public void MenuHandler_Buy(Menu menu, MenuAction action, int client, int slot)
 {
-    if(!BuyCheck(client))
+    if (!BuyCheck(client))
         return;
-    if(action == MenuAction_Cancel)
+    if (action == MenuAction_Cancel)
         g_pRoot.Display(client, 60);
     else if (action == MenuAction_Select)
     {
@@ -1530,18 +1530,18 @@ public void MenuHandler_Buy(Menu menu, MenuAction action, int client, int slot)
         strcopy(info.category, sizeof(info.category), g_aryWeaponInfos[index].category);
         strcopy(info.classname, sizeof(info.classname), g_aryWeaponInfos[index].classname);
         strcopy(info.display, sizeof(info.display), g_aryWeaponInfos[index].display);
-        info.price = g_aryWeaponInfos[index].price;
-        info.weight = g_aryWeaponInfos[index].weight;
+        info.price       = g_aryWeaponInfos[index].price;
+        info.weight      = g_aryWeaponInfos[index].weight;
 
         int playerCredit = ZM_GetMoney(client);
-        if(playerCredit < info.price)
+        if (playerCredit < info.price)
         {
             PrintToChat(client, "你买不起%s，需要%d元，你只有%d元", info.display, info.price, playerCredit);
             return;
         }
         int playerweight = ZM_GetWeight(client);
-        int maxWeight = g_pMaxWeight.IntValue;
-        if(playerweight + info.weight > maxWeight)
+        int maxWeight    = g_pMaxWeight.IntValue;
+        if (playerweight + info.weight > maxWeight)
         {
             PrintToChat(client, "你背不动%s，需要%d负重，你现在的负重是%d", info.display, info.weight, playerweight);
             return;
@@ -1549,9 +1549,9 @@ public void MenuHandler_Buy(Menu menu, MenuAction action, int client, int slot)
 
         ZM_AddMoney(client, -info.price);
         //会计算双倍负重
-        //ZM_AddWeight(client, info.weight);
+        // ZM_AddWeight(client, info.weight);
         int weapon = CreateEntityByName(info.classname);
-        //Do not respawn
+        // Do not respawn
         DispatchKeyValue(weapon, "spawnflags", "1073741824");
         DispatchKeyValue(weapon, "CanBePickedUp", "1");
         DispatchSpawn(weapon);
@@ -1563,7 +1563,7 @@ public void MenuHandler_Buy(Menu menu, MenuAction action, int client, int slot)
 
 public void MenuHandler_SubMenu(Menu menu, MenuAction action, int client, int slot)
 {
-    if(!BuyCheck(client))
+    if (!BuyCheck(client))
         return;
     if (action == MenuAction_Select)
     {
@@ -1580,7 +1580,7 @@ public void MenuHandler_SubMenu(Menu menu, MenuAction action, int client, int sl
 
 public Action Command_OpenMenu(int client, int args)
 {
-    if(!BuyCheck(client))
+    if (!BuyCheck(client))
         return Plugin_Handled;
     g_pRoot.Display(client, 60);
     return Plugin_Handled;
@@ -1588,10 +1588,10 @@ public Action Command_OpenMenu(int client, int args)
 
 public void OnPluginStart()
 {
-    g_pRoot    = new Menu(MenuHandler_SubMenu);
+    g_pRoot = new Menu(MenuHandler_SubMenu);
     g_pRoot.SetTitle("购买菜单")
-    g_dicMenus = new StringMap();
-    g_pMaxWeight = FindConVar("vietnam_zombies_max_carry_weight");
+        g_dicMenus = new StringMap();
+    g_pMaxWeight   = FindConVar("vietnam_zombies_max_carry_weight");
     InitWeaponInfos();
     InitMenuItem();
 
