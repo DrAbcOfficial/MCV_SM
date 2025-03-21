@@ -214,7 +214,7 @@ public int Native_GetCashByIndex(Handle plugin, int args)
 GlobalForward g_pCashPickupForward;
 Action        OnCashTouched(int entity, int other)
 {
-    if (other > 0 && other <= MaxClients && ZM_IsClientValid(other))
+    if (ZM_IsClientValid(other))
     {
         int owner = GetEntProp(entity, Prop_Send, "m_hOwnerEntity");
         int count = GetEntData(entity, 0x304);
@@ -253,8 +253,8 @@ public int Native_CreateCash(Handle plugin, int args)
     DispatchSpawn(cash);
     if (IsValidEntity(owner))
     {
-        SetEntProp(cash, Prop_Send, "m_hOwnerEntity", owner);
         SetEntityOwner(cash, owner);
+        SetEntProp(cash, Prop_Send, "m_hOwnerEntity", owner);
     }
     SetEntityHealth(cash, count);
     SetEntPropFloat(cash, Prop_Send, "m_flModelScale", 1.3);
