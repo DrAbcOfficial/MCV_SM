@@ -28,6 +28,8 @@ ConVar g_pRangedHealth;
 ConVar g_pScreamerHealth;
 ConVar g_pSlasherHealth;
 
+ConVar g_pBaseRatio;
+
 // fair zombie health
 // original_health * (player_count * multi_cvar + 1)   ----> wtf?
 // Normal   --->  Slow grow, easy to kill, one shot one kill
@@ -67,99 +69,85 @@ public void OnZombieSpawned(int zombie)
         if (ZM_IsClientValid(i) && GetClientTeam(i) > 1)
             amout++;
     }
-    float ratio = 1.0;
+    float ratio = g_pBaseRatio.FloatValue;
     int   base  = 0;
     switch (type)
     {
         case ZOMBIE_TYPE_INVALID: return;
         case ZOMBIE_TYPE_NORNAML:
         {
-            ratio = Logarithm(amout + 1) / 2 + 1;
+            ratio = Logarithm(amout + 1.0) / 2 + 1;
             base  = g_pNormalHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_ARMOR:
         {
             ratio = 2.5 - (3 / (amout + 1));
             base  = g_pArmorHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_BLOAT:
         {
-            ratio = (Logarithm(amout, 2.718) / 3 * 2) + 1;
+            ratio = (Logarithm(float(amout), 2.718) / 3 * 2) + 1;
             base  = g_pBloatHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_BOMBER:
         {
-            ratio = 0.033(amout - 1) + 1;
+            ratio = 0.033 * (amout - 1) + 1;
             base  = g_pBomberHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_BUFFALO:
         {
-            ratio = 0.133(amout - 1) + 1;
+            ratio = 0.133 * (amout - 1) + 1;
             base  = g_pBuffaloHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_BURNING:
         {
-            ratio = 0.033(amout - 1) + 1;
+            ratio = 0.033 * (amout - 1) + 1;
             base  = g_pBurningHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_CROW:
         {
             ratio = 1.0;
             base  = g_pCrowHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_DOG:
         {
-            ratio = 2 - (2 / (amout + 1));
+            ratio = 2.0 - (2.0 / (amout + 1.0));
             base  = g_pDogHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_GUN:
         {
-            ratio = 0.2(amout - 1) + 1;
+            ratio = 0.2 * (amout - 1) + 1;
             base  = g_pGunHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_HAVOC:
         {
-            ratio = 0.033(amout - 1) + 1;
+            ratio = 0.033 * (amout - 1) + 1;
             base  = g_pHavocHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_ORANGE:
         {
-            ratio = 0.133(amout - 1) + 1;
+            ratio = 0.133 * (amout - 1) + 1;
             base  = g_pOrangeHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_RANGED:
         {
-            ratio = 0.1(amout - 1) + 1;
+            ratio = 0.1 * (amout - 1) + 1;
             base  = g_pRangedHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_SCREAMER:
         {
-            ratio = 0.2(amout - 1) + 1;
+            ratio = 0.2 * (amout - 1) + 1;
             base  = g_pScreamerHealth.IntValue;
-            break;
         }
         case ZOMBIE_TYPE_SLASHER:
         {
-            ratio = 0.086(amout - 1) + 1;
+            ratio = 0.086 * (amout - 1) + 1;
             base  = g_pSlasherHealth.IntValue;
-            break;
         }
     }
 
     float health = base * ratio;
-    SetEntityHealth(zombie, health);
+    SetEntityHealth(zombie, RoundFloat(health));
 }
 
 public void OnPluginStart()
@@ -178,8 +166,26 @@ public void OnPluginStart()
     g_pRangedHealth   = FindConVar("zombie_health_ranged");
     g_pScreamerHealth = FindConVar("zombie_health_screamer");
     g_pSlasherHealth  = FindConVar("zombie_health_slasher");
+
+    g_pBaseRatio      = CreateConVar("sm_zombie_health_baseratio", "1.0", "Base ratio for zombie health", 0, true, 0.1);
 }
 
 public void OnPluginEnd()
 {
+    g_pNormalHealth.Close();
+    g_pArmorHealth.Close();
+    g_pBloatHealth.Close();
+    g_pBomberHealth.Close();
+    g_pBuffaloHealth.Close();
+    g_pBurningHealth.Close();
+    g_pCrowHealth.Close();
+    g_pDogHealth.Close();
+    g_pGunHealth.Close();
+    g_pHavocHealth.Close();
+    g_pOrangeHealth.Close();
+    g_pRangedHealth.Close();
+    g_pScreamerHealth.Close();
+    g_pSlasherHealth.Close();
+
+    g_pBaseRatio.Close();
 }
