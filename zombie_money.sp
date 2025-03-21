@@ -24,7 +24,7 @@ public void OnZombiePhaseChanged(int phase)
     {
         for (int i = 1; i <= MaxClients; i++)
         {
-            if (IsValidEntity(i) && IsClientInGame(i))
+            if (ZM_IsClientValid(i))
             {
                 int add = g_pPlayerSurvivedIncome.IntValue;
                 ZM_AddMoney(i, add);
@@ -56,7 +56,7 @@ Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
     if (ZM_GetPhase() == ZM_PHASE_WAITING)
         return Plugin_Continue;
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
-    if (IsClientInGame(client))
+    if (ZM_IsClientValid(client))
     {
         int add = g_pPlayerDeathIncome.IntValue;
         ZM_AddMoney(client, add);

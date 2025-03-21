@@ -1500,9 +1500,7 @@ void InitMenuItem()
 
 bool BuyCheck(int client)
 {
-    if(client <= 0 || client > MaxClients)
-        return false;
-    if(!IsClientInGame(client))
+    if(!ZM_IsClientValid(client))
         return false;
     if(!IsPlayerAlive(client))
     {

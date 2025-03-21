@@ -83,6 +83,33 @@ forward void OnZombiePhaseChanged(int phase);
  */
 native int   ZM_GetPhase();
 
+/**
+ * Get cash entity count
+ *
+ * @return zombie entity index
+ */
+native int ZM_GetCashCount();
+/**
+ * Get Case entity By Index
+ *
+ * @param index Case index
+ * @return cash entity index
+ * @error Invalid index.
+ */
+native int ZM_GetCashByIndex(int index);
+/**
+ * Create cash entity
+ *
+ * @param owner owner entity index, can be -1
+ * @param count how much this cash pile worth?
+ * @param org origin
+ * @param ang angles
+ * @param vec velocity
+ * @return cash entity index
+ */
+native int ZM_CreateCash(int owner, int count, const float[] org, 
+                          const float[] ang, const float[] vec);
+
 forward void OnZombieSpawned(int zombie);
 
 forward void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name,
@@ -91,7 +118,23 @@ forward void OnZombieKilled(int zombie, char[] classname, int attacker, char[] w
 forward void OnZombieKilledPost(int zombie, char[] classname, int attacker, char[] weapon_name,
                             char[] weapon_id, int damagebits, bool headshot, bool backblast,
                             int penetrated, float killdistance);
-                            
+forward void OnCashPickup(int cash, int other, int& owner, int& count);
+/**
+ * Is player valid?
+ *
+ * @param client client index
+ * @return true or false
+ */
+stock bool ZM_IsClientValid(int client)
+{
+    if(!IsValidEntity(client))
+        return false;
+    if (client <= 0 || client > MaxClients)
+        return false;
+    if (!IsClientInGame(client))
+        return false;
+    return true;
+}
 
 public SharedPlugin __pl_zombie_core = {
     name = "Zombie Core",
@@ -110,11 +153,18 @@ public __pl_zombie_core_SetNTVOptional()
     MarkNativeAsOptional("ZM_GetMoney");
     MarkNativeAsOptional("ZM_SetMoney");
     MarkNativeAsOptional("ZM_AddMoney");
+
     MarkNativeAsOptional("ZM_GetWeight");
     MarkNativeAsOptional("ZM_SetWeight");
     MarkNativeAsOptional("ZM_AddWeight");
+
     MarkNativeAsOptional("ZM_GetZombieCount");
     MarkNativeAsOptional("ZM_GetZombieByIndex");
+
     MarkNativeAsOptional("ZM_GetPhase");
+
+    MarkNativeAsOptional("ZM_GetCashCount");
+    MarkNativeAsOptional("ZM_GetCashByIndex");
+    MarkNativeAsOptional("ZM_CreateCash");
 }
 #endif

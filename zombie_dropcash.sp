@@ -4,7 +4,7 @@
 #include <zombie_core>
 
 #define PLUGIN_NAME        "Zombie DropCash"
-#define PLUGIN_DESCRIPTION "全新僵尸丢钱王一代"
+#define PLUGIN_DESCRIPTION "全新僵尸丢钱王二代"
 #define CASH_MODEL         "models/entities/money_pack.mdl"
 
 public Plugin myinfo =
@@ -17,33 +17,19 @@ public Plugin myinfo =
 };
 
 ArrayList g_aryCashed;
+ConVar g_pCashCount;
 
-Action    OnCashTouched(int entity, int other)
+void OnCashPickup(int cash, int other, int& owner, int& count)
 {
-    
-    if (other > 0 && other <= MaxClients && IsClientInGame(other))
+    int index = g_aryCashed.FindValue(cash);
+    if(index != -1)
     {
-        int owner = GetEntProp(entity, Prop_Send, "m_hOwnerEntity");
-        int count = GetEntData(entity, 0x304);
-        if (other != owner)
+        if (other != owner && ZM_IsClientValid(owner))
         {
             char buffer[64];
             GetClientName(owner, buffer, sizeof(buffer));
             PrintToChat(other, "你捡到了来自%s丢出的%d元钞票，快谢谢他吧！", buffer, count);
         }
-        ZM_AddMoney(other, count);
-        RemoveEntity(entity);
-    }
-    return Plugin_Handled;
-}
-
-public void OnEntityDestroyed(int entity)
-{
-    int index = g_aryCashed.FindValue(entity);
-    if (index != -1)
-    {
-        g_aryCashed.Erase(index);
-        SDKUnhook(entity, SDKHook_Touch, OnCashTouched);
     }
 }
 
@@ -60,7 +46,7 @@ Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
 
 public Action Command_DropMoney(int client, int args)
 {
-    int count = 500;
+    int count = g_pCashCount.IntValue;
     if (args > 0)
     {
         count = GetCmdArgInt(1);
@@ -76,17 +62,6 @@ public Action Command_DropMoney(int client, int args)
         ReplyToCommand(client, "丢啊，无钱还充大佬打%d元啊", count);
         return Plugin_Handled;
     }
-    int cash = CreateEntityByName("physics_prop");
-    DispatchKeyValue(cash, "model", CASH_MODEL);
-    DispatchKeyValue(cash, "disablereceiveshadows", "1");
-    DispatchKeyValue(cash, "disableshadows", "1");
-    DispatchKeyValue(cash, "mins", "-16 -16 -24");
-    DispatchKeyValue(cash, "maxs", "16 16 24");
-    DispatchSpawn(cash);
-    SetEntityOwner(cash, client);
-    SetEntityHealth(cash, count);
-    SetEntProp(cash, Prop_Send, "m_hOwnerEntity", client);
-    SetEntPropFloat(cash, Prop_Send, "m_flModelScale", 1.3);
     float org[3];
     float ang[3];
     float vec[3];
@@ -96,21 +71,21 @@ public Action Command_DropMoney(int client, int args)
     vec[2] = 300.0;
     vec[0] *= 300;
     vec[1] *= 300;
-    TeleportEntity(cash, org, ang, vec);
-    SDKHook(cash, SDKHook_Touch, OnCashTouched);
     ZM_AddMoney(client, -count);
+    int cash = ZM_CreateCash(client, count, org, ang, vec);
+    g_aryCashed.Push(cash);
     return Plugin_Handled;
+}
+
+public void MapInit(const char[] mapname)
+{
+    g_aryCashed.Clear();
 }
 
 public void OnPluginStart()
 {
     g_aryCashed = new ArrayList();
+    g_pCashCount = CreateConVar("sm_zombie_default_cash_count", "500", "Default count for drop cash", 0);
     RegConsoleCmd("sm_zombie_dropcash", Command_DropMoney, "Drop money");
     HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
-}
-
-public void OnMapInit(const char[] mapName)
-{
-    g_aryCashed.Clear();
-    PrecacheModel(CASH_MODEL);
 }

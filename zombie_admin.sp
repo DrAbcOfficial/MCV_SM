@@ -45,7 +45,7 @@ public void MenuHandler_GiveMoneyAll(Menu menu, MenuAction action, int client, i
         int money = StringToInt(buffer);
         for (new i = 1; i <= MaxClients; i++)
         {
-            if (IsClientInGame(i))
+            if (ZM_IsClientValid(i))
                 ZM_AddMoney(i, money);
         }
         GetClientName(client, buffer, sizeof(buffer));
@@ -87,7 +87,7 @@ public void MenuHandler_GiveMoneyOne(Menu menu, MenuAction action, int client, i
         char buffer[64];
         menu.GetItem(slot, buffer, sizeof(buffer));
         int money = StringToInt(buffer);
-        if (IsClientInGame(i))
+        if (ZM_IsClientValid(i))
             ZM_AddMoney(i, money);
         GetClientName(client, buffer, sizeof(buffer));
         PrintToChat(i, "管理员%s给你打了%d元钱。", buffer, money);

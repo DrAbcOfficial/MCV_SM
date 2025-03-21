@@ -4,7 +4,7 @@
 #include <zombie_core>
 
 #define PLUGIN_NAME        "Zombie Core"
-#define PLUGIN_DESCRIPTION "全新僵尸核心王一代"
+#define PLUGIN_DESCRIPTION "全新僵尸核心王四代"
 
 public Plugin myinfo =
 {
@@ -15,40 +15,6 @@ public Plugin myinfo =
     url         = PLUGIN_DESCRIPTION
 };
 
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-    CreateNative("ZM_GetMoney", Native_GetMoney);
-    CreateNative("ZM_SetMoney", Native_SetMoney);
-    CreateNative("ZM_AddMoney", Native_AddMoney);
-
-    CreateNative("ZM_GetWeight", Native_GetWeight);
-    CreateNative("ZM_SetWeight", Native_SetWeight);
-    CreateNative("ZM_AddWeight", Native_AddWeight);
-
-    CreateNative("ZM_GetZombieCount", Native_GetZombieCount);
-    CreateNative("ZM_GetZombieByIndex", Native_GetZombieByIndex);
-
-    CreateNative("ZM_GetPhase", Native_GetZombiePhase);
-
-    RegPluginLibrary("Zombie Core");
-    return APLRes_Success;
-}
-
-stock bool NativeCheck_IsClientValid(int client)
-{
-    if (client <= 0 || client > MaxClients)
-    {
-        ThrowNativeError(SP_ERROR_NATIVE, "Client index %i is invalid", client);
-        return false;
-    }
-    if (!IsClientInGame(client))
-    {
-        ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not in game", client);
-        return false;
-    }
-    return true;
-}
-
 // 玩家金币维护
 // undefined4 __thiscall CVietnam_Player::GetCredits(CVietnam_Player *this)
 // {
@@ -57,7 +23,7 @@ stock bool NativeCheck_IsClientValid(int client)
 public int Native_GetMoney(Handle plugin, int args)
 {
     int client = GetNativeCell(1);
-    if (NativeCheck_IsClientValid(client))
+    if (ZM_IsClientValid(client))
     {
         int money = GetEntData(client, 0x21d8);
         return money;
@@ -68,7 +34,7 @@ public int Native_GetMoney(Handle plugin, int args)
 public int Native_SetMoney(Handle plugin, int args)
 {
     int client = GetNativeCell(1);
-    if (NativeCheck_IsClientValid(client))
+    if (ZM_IsClientValid(client))
     {
         int money = GetNativeCell(2);
         SetEntData(client, 0x21d8, money);
@@ -79,7 +45,7 @@ public int Native_SetMoney(Handle plugin, int args)
 public int Native_AddMoney(Handle plugin, int args)
 {
     int client = GetNativeCell(1);
-    if (NativeCheck_IsClientValid(client))
+    if (ZM_IsClientValid(client))
     {
         int money = GetEntData(client, 0x21d8);
         int add   = GetNativeCell(2);
@@ -96,7 +62,7 @@ public int Native_AddMoney(Handle plugin, int args)
 public int Native_GetWeight(Handle plugin, int args)
 {
     int client = GetNativeCell(1);
-    if (NativeCheck_IsClientValid(client))
+    if (ZM_IsClientValid(client))
     {
         int weight = GetEntData(client, 0x21dc);
         return weight;
@@ -107,7 +73,7 @@ public int Native_GetWeight(Handle plugin, int args)
 public int Native_SetWeight(Handle plugin, int args)
 {
     int client = GetNativeCell(1);
-    if (NativeCheck_IsClientValid(client))
+    if (ZM_IsClientValid(client))
     {
         int weight = GetNativeCell(2);
         SetEntData(client, 0x21dc, weight);
@@ -118,7 +84,7 @@ public int Native_SetWeight(Handle plugin, int args)
 public int Native_AddWeight(Handle plugin, int args)
 {
     int client = GetNativeCell(1);
-    if (NativeCheck_IsClientValid(client))
+    if (ZM_IsClientValid(client))
     {
         int weight = GetEntData(client, 0x21dc);
         int add    = GetNativeCell(2);
@@ -151,28 +117,6 @@ public void ZombieSpawn_Post(int entity)
     Call_StartForward(g_pZombieSpawnForward);
     Call_PushCell(entity);
     Call_Finish();
-}
-
-public void OnEntityCreated(int entity, const char[] classname)
-{
-    if (!strncmp(classname, "nb_zombie", 9, false))
-    {
-        g_aryZombies.Push(entity);
-        SDKHook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
-    }
-}
-
-public void OnEntityDestroyed(int entity)
-{
-    for (int i = 0; i < g_aryZombies.Length; i++)
-    {
-        if (g_aryZombies.Get(i) == entity)
-        {
-            SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
-            g_aryZombies.Erase(i);
-            return;
-        }
-    }
 }
 
 int           g_iZombiePhase = ZM_PHASE_WAITING;
@@ -250,6 +194,137 @@ Action        Event_ZombieKilled(Handle event, const char[] name, bool dontBroad
     return Plugin_Continue;
 }
 
+//金币创建及PickupForward
+#define CASH_MODEL         "models/entities/money_pack.mdl"
+ArrayList g_aryCashes;
+public int Native_GetCashCount(Handle plugin, int args)
+{
+    return g_aryCashes.Length;
+}
+public int Native_GetCashByIndex(Handle plugin, int args)
+{
+    int index = GetNativeCell(1);
+    if (index >= g_aryCashes.Length)
+        return INVALID_ENT_REFERENCE;
+    int c = g_aryCashes.Get(index);
+    return c;
+}
+GlobalForward g_pCashPickupForward;
+Action    OnCashTouched(int entity, int other)
+{
+    
+    if (other > 0 && other <= MaxClients && ZM_IsClientValid(other))
+    {
+        int owner = GetEntProp(entity, Prop_Send, "m_hOwnerEntity");
+        int count = GetEntData(entity, 0x304);
+
+        Call_StartForward(g_pCashPickupForward);
+        Call_PushCell(entity);
+        Call_PushCell(other);
+        Call_PushCellRef(owner);
+        Call_PushCellRef(count);
+        Call_Finish();
+
+        ZM_AddMoney(other, count);
+        RemoveEntity(entity);
+    }
+    return Plugin_Handled;
+}
+//native int ZM_CreateCash(int owner, int count, const float[] org, 
+//                          const float[] ang, const float[] vec)
+public int Native_CreateCash(Handle plugin, int args)
+{
+    int owner = GetNativeCell(1);
+    int count = GetNativeCell(2);
+    float[] org = new float[3];
+    GetNativeArray(3, org, 3);
+    float[] ang = new float[3];
+    GetNativeArray(4, ang, 3);
+    float[] vec = new float[3];
+    GetNativeArray(5, vec, 3);
+
+    int cash = CreateEntityByName("physics_prop");
+    DispatchKeyValue(cash, "model", CASH_MODEL);
+    DispatchKeyValue(cash, "disablereceiveshadows", "1");
+    DispatchKeyValue(cash, "disableshadows", "1");
+    DispatchKeyValue(cash, "mins", "-16 -16 -24");
+    DispatchKeyValue(cash, "maxs", "16 16 24");
+    DispatchSpawn(cash);
+    if(IsValidEntity(owner))
+    {
+        SetEntProp(cash, Prop_Send, "m_hOwnerEntity", owner);
+        SetEntityOwner(cash, owner);
+    }
+    SetEntityHealth(cash, count);
+    SetEntPropFloat(cash, Prop_Send, "m_flModelScale", 1.3);
+    TeleportEntity(cash, org, ang, vec);
+    SDKHook(cash, SDKHook_Touch, OnCashTouched);
+    return cash;
+}
+
+// Basic forward
+void ClearCache()
+{
+    for (int i = 0; i < g_aryZombies.Length; i++)
+    {
+        SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
+    }
+    for (int i = 0; i < g_aryCashes.Length; i++)
+    {
+        SDKUnhook(i, SDKHook_Touch, OnCashTouched);
+    }
+    g_aryCashes.Clear();
+    g_aryZombies.Clear();
+}
+public void OnEntityCreated(int entity, const char[] classname)
+{
+    if (!strncmp(classname, "nb_zombie", 9, false))
+    {
+        g_aryZombies.Push(entity);
+        SDKHook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
+    }
+}
+
+public void OnEntityDestroyed(int entity)
+{
+    int z = g_aryZombies.FindValue(entity);
+    if(z != -1)
+    {
+        SDKUnhook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
+        g_aryZombies.Erase(z);
+    }
+
+    int c = g_aryCashes.FindValue(entity);
+    if (c != -1)
+    {
+        g_aryCashes.Erase(c);
+        SDKUnhook(entity, SDKHook_Touch, OnCashTouched);
+    }
+}
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    CreateNative("ZM_GetMoney", Native_GetMoney);
+    CreateNative("ZM_SetMoney", Native_SetMoney);
+    CreateNative("ZM_AddMoney", Native_AddMoney);
+
+    CreateNative("ZM_GetWeight", Native_GetWeight);
+    CreateNative("ZM_SetWeight", Native_SetWeight);
+    CreateNative("ZM_AddWeight", Native_AddWeight);
+
+    CreateNative("ZM_GetZombieCount", Native_GetZombieCount);
+    CreateNative("ZM_GetZombieByIndex", Native_GetZombieByIndex);
+
+    CreateNative("ZM_GetPhase", Native_GetZombiePhase);
+
+    CreateNative("ZM_GetCashCount", Native_GetCashCount);
+    CreateNative("ZM_GetCashByIndex", Native_GetCashByIndex);
+    CreateNative("ZM_CreateCash", Native_CreateCash);
+
+    RegPluginLibrary("Zombie Core");
+    return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
     g_aryZombies               = new ArrayList();
@@ -262,27 +337,23 @@ public void OnPluginStart()
                                                    Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_pZombieKilledPostForward = new GlobalForward("OnZombieKilledPost", ET_Ignore, Param_Cell, Param_String, Param_Cell,
                                                    Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-
+    g_pCashPickupForward = new GlobalForward("OnCashPickup", ET_Ignore, Param_Cell, Param_Cell, Param_CellByRef, Param_CellByRef);
+    
     HookEvent("zm_phase_change", Event_PhaseChange, EventHookMode_Pre);
     HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
 }
 
 public void OnMapInit(const char[] mapName)
 {
-    for (int i = 0; i < g_aryZombies.Length; i++)
-    {
-        SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
-    }
-    g_aryZombies.Clear();
+    ClearCache();
+    PrecacheModel(CASH_MODEL);
 }
 
 public void OnPluginEnd()
 {
-    for (int i = 0; i < g_aryZombies.Length; i++)
-    {
-        SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
-    }
-    g_aryZombies.Clear();
+    ClearCache();
     g_pPhaseChangedForward.Close();
     g_pZombieKilledForward.Close();
+    g_pZombieKilledPostForward.Close();
+    g_pCashPickupForward.Close();
 }
