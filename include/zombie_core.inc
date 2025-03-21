@@ -136,6 +136,66 @@ stock bool ZM_IsClientValid(int client)
     return true;
 }
 
+#define ZOMBIE_TYPE_INVALID -1
+#define ZOMBIE_TYPE_NORNAML 0
+#define ZOMBIE_TYPE_ARMOR 1
+#define ZOMBIE_TYPE_BLOAT 2
+#define ZOMBIE_TYPE_BOMBER 3
+#define ZOMBIE_TYPE_BUFFALO 4
+#define ZOMBIE_TYPE_BURNING 5
+#define ZOMBIE_TYPE_CROW 6
+#define ZOMBIE_TYPE_DOG 7
+#define ZOMBIE_TYPE_GUN 8
+#define ZOMBIE_TYPE_HAVOC 9
+#define ZOMBIE_TYPE_ORANGE 10
+#define ZOMBIE_TYPE_RANGED 11
+#define ZOMBIE_TYPE_SCREAMER 12
+#define ZOMBIE_TYPE_SLASHER 13
+
+/**
+ * get zombie type by entity
+ *
+ * @param zombie zombie index
+ * @return zombie type, ZOMBIE_TYPE_INVALID for invalid
+ */
+// this is stupid
+stock int ZM_GetZombieType(int zombie)
+{
+    if(!IsValidEntity(zombie))
+        return ZOMBIE_TYPE_INVALID;
+    char buffer[64];
+    GetEntityClassname(zombie, buffer, sizeof(buffer));
+    if(!strcmp(buffer, "nb_zombie"))
+        return ZOMBIE_TYPE_NORNAML;
+    else if(!strcmp(buffer, "nb_zombie_armor"))
+        return ZOMBIE_TYPE_ARMOR;
+    else if(!strcmp(buffer, "nb_zombie_bloat"))
+        return ZOMBIE_TYPE_BLOAT;
+    else if(!strcmp(buffer, "nb_zombie_bomber"))
+        return ZOMBIE_TYPE_BOMBER;
+    else if(!strcmp(buffer, "nb_zombie_buffalo"))
+        return ZOMBIE_TYPE_BUFFALO;
+    else if(!strcmp(buffer, "nb_zombie_burn"))
+        return ZOMBIE_TYPE_BURNING;
+    else if(!strcmp(buffer, "nb_zombie_crow"))
+        return ZOMBIE_TYPE_CROW;
+    else if(!strcmp(buffer, "nb_zombie_dog"))
+        return ZOMBIE_TYPE_DOG;
+    else if(!strcmp(buffer, "nb_zombie_gun"))
+        return ZOMBIE_TYPE_GUN;
+    else if(!strcmp(buffer, "nb_zombie_havoc"))
+        return ZOMBIE_TYPE_HAVOC;
+    else if(!strcmp(buffer, "nb_zombie_orange"))
+        return ZOMBIE_TYPE_ORANGE;
+    else if(!strcmp(buffer, "nb_zombie_range"))
+        return ZOMBIE_TYPE_RANGED;
+    else if(!strcmp(buffer, "nb_zombie_screamer"))
+        return ZOMBIE_TYPE_SCREAMER;
+    else if(!strcmp(buffer, "nb_zombie_slasher"))
+        return ZOMBIE_TYPE_SLASHER;
+    return ZOMBIE_TYPE_INVALID;
+}
+
 public SharedPlugin __pl_zombie_core = {
     name = "Zombie Core",
     file = "zombie_core.smx",

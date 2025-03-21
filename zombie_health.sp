@@ -13,16 +13,13 @@ public Plugin myinfo =
     url         = PLUGIN_DESCRIPTION
 };
 
-ConVar g_pZombieHealth;
-ConVar g_pZombieBurningHealth;
-
 // fair zombie health
 // original_health * (player_count * multi_cvar + 1)   ----> wtf?
 // Normal   --->  Slow grow, easy to kill, one shot one kill
 // f(x) = log(x+1)/2+1
 // Armor    --->  Quick grow first, but slow with high player amout, headshot to kill, encourage player aim and shot
 // f(x) = 2.5-(3/(x+1))   ---> lim x -> inf = 2.5
-// Bloate   --->  Slow grow, but with high base health
+// Bloat    --->  Slow grow, but with high base health
 // f(x) = (ln(x)/3*2) + 1 
 // Bomber   --->  Slow grow, fair health, encourage player kill him first
 // f(x) = 0.033(x-1) + 1
@@ -49,23 +46,17 @@ ConVar g_pZombieBurningHealth;
 
 public void OnZombieSpawned(int zombie)
 {
-    char classname[64];
-    GetEntityClassname(zombie, classname, sizeof(classname));
-    if(!strcmp(classname, "nb_zombie"))
-        SetEntityHealth(zombie, g_pZombieHealth.IntValue);
-    else if(!strcmp(classname, "nb_zombie_burning"))
-        SetEntityHealth(zombie, g_pZombieBurningHealth.IntValue);
+    int type = ZM_GetZombieType(zombie);
+    float ratio = 1.0;
 
 }
 
 public void OnPluginStart()
 {
-    g_pZombieHealth = CreateConVar("sm_zombie_health", "60", "Normal zombie health", 0);
-    g_pZombieBurningHealth = CreateConVar("sm_zombie_burning_health", "60", "Normal zombie health", 0);
+
 }
 
 public void OnPluginEnd()
 {
-    g_pZombieHealth.Close();
-    g_pZombieBurningHealth.Close();
+
 }

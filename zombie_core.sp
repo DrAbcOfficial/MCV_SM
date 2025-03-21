@@ -259,6 +259,9 @@ public int Native_CreateCash(Handle plugin, int args)
     SetEntPropFloat(cash, Prop_Send, "m_flModelScale", 1.3);
     TeleportEntity(cash, org, ang, vec);
     SDKHook(cash, SDKHook_Touch, OnCashTouched);
+    delete org;
+    delete ang;
+    delete vec;
     return cash;
 }
 
