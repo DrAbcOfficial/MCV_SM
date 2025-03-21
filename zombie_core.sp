@@ -194,6 +194,37 @@ Action        Event_ZombieKilled(Handle event, const char[] name, bool dontBroad
     return Plugin_Continue;
 }
 
+// 僵尸受伤forward
+GlobalForward g_pZombieHurtForward;
+Action        Event_ZombieHurt(Handle event, const char[] name, bool dontBroadcast)
+{
+    int userid = GetEventInt(event, "userid");
+    if (userid == -1)
+    {
+        int  attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+        int  health   = GetEventInt(event, "health");
+        int  armor    = GetEventInt(event, "armor");
+        char weapon[64];
+        GetEventString(event, "weapon", weapon, sizeof(weapon));
+        int dmg_health = GetEventInt(event, "dmg_health");
+        int dmg_armor  = GetEventInt(event, "dmg_armor");
+        int hitgroup   = GetEventInt(event, "hitgroup");
+        int damagetype = GetEventInt(event, "damagetype");
+
+        Call_StartForward(g_pZombieHurtForward);
+        Call_PushCell(attacker);
+        Call_PushCell(health);
+        Call_PushCell(armor);
+        Call_PushString(weapon);
+        Call_PushCell(dmg_health);
+        Call_PushCell(dmg_armor);
+        Call_PushCell(hitgroup);
+        Call_PushCell(damagetype);
+        Call_Finish();
+    }
+    return Plugin_Continue;
+}
+
 //金币创建及PickupForward
 #define CASH_MODEL "models/entities/money_pack.mdl"
 ArrayList g_aryCashes;
@@ -336,6 +367,9 @@ public void OnPluginStart()
 
     g_pPhaseChangedForward     = new GlobalForward("OnZombiePhaseChanged", ET_Ignore, Param_Cell);
 
+    g_pZombieHurtForward       = new GlobalForward("OnZombieHurt", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_String,
+                                                   Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+
     g_pZombieKilledForward     = new GlobalForward("OnZombieKilled", ET_Ignore, Param_Cell, Param_String, Param_Cell,
                                                    Param_String, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_pZombieKilledPostForward = new GlobalForward("OnZombieKilledPost", ET_Ignore, Param_Cell, Param_String, Param_Cell,
@@ -344,6 +378,7 @@ public void OnPluginStart()
 
     HookEvent("zm_phase_change", Event_PhaseChange, EventHookMode_Pre);
     HookEvent("other_death", Event_ZombieKilled, EventHookMode_Pre);
+    HookEvent("character_hurt", Event_ZombieHurt, EventHookMode_Post);
 }
 
 public void OnMapInit(const char[] mapName)

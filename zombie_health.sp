@@ -69,6 +69,8 @@ public void OnZombieSpawned(int zombie)
         if (ZM_IsClientValid(i) && GetClientTeam(i) > 1)
             amout++;
     }
+    if(amout <= 0)
+        return;
     float ratio = 1.0;
     int   base  = 0;
     switch (type)
@@ -146,8 +148,13 @@ public void OnZombieSpawned(int zombie)
         }
     }
 
-    float health = base * ratio * g_pBaseRatio.FloatValue;
-    SetEntityHealth(zombie, RoundFloat(health));
+    int health = RoundFloat(base * ratio * g_pBaseRatio.FloatValue);
+    if (health < 1)
+        health = 1;
+    SetEntityHealth(zombie, health);
+    // SetMaxHealth
+    // 00e19ef0 8b 87 00        MOV        EAX,dword ptr [this + 0x300]
+    SetEntData(zombie, 0x300, health);
 }
 
 public void OnPluginStart()

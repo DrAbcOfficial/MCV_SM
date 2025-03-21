@@ -37,7 +37,8 @@ Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
     for (int i = 0; i < g_aryCashed.Length; i++)
     {
         int cash = g_aryCashed.Get(i);
-        RemoveEntity(cash);
+        if (IsValidEntity(cash))
+            RemoveEntity(cash);
     }
     g_aryCashed.Clear();
     return Plugin_Continue;

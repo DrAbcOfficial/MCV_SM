@@ -112,6 +112,8 @@ native int   ZM_CreateCash(int owner, int count, const float org[3],
 
 forward void OnZombieSpawned(int zombie);
 
+forward void OnZombieHurt(int attacker, int health, int armor, char[] weapon, int dmg_health, int dmg_armor, int hitgroup, int damagetype);
+
 forward void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name,
                             char[] weapon_id, int damagebits, bool headshot, bool backblast,
                             int penetrated, float killdistance);
