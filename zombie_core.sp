@@ -330,6 +330,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
     g_aryZombies               = new ArrayList();
+    g_aryCashes                = new ArrayList();
 
     g_pZombieSpawnForward      = new GlobalForward("OnZombieSpawned", ET_Ignore, Param_Cell);
 
