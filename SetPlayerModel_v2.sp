@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <sdktools>
+#include <zombie_core>
 
 public Plugin myinfo =
 {
@@ -13,48 +14,33 @@ public Plugin myinfo =
 // Menus
 Menu      g_pRootMenu;
 StringMap g_dicMenus;
-
-const int MAX_CLIENT_INDEX = 33;
-
 // Model and list
 StringMap g_dicModels;
 // Player chosed
 StringMap g_dicPlayerModels;
 
-bool      IsValidClient(int client)
-{
-    if (client > 33 || client < 1)
-        return false;
-    if (!IsValidEntity(client))
-        return false;
-    return IsClientInGame(client);
-}
 void ChangePlayerModel(int client, char[] model)
 {
-    if (IsValidClient(client) && IsPlayerAlive(client))
+    if (ZM_IsClientValid(client) && IsPlayerAlive(client))
     {
-        // static int table = INVALID_STRING_TABLE;
-        // if (table == INVALID_STRING_TABLE)
-        //     table = FindStringTable("modelprecache");
-        // bool save = LockStringTables(false);
-        // int modelidx = FindStringIndex(table, model);
-        // LockStringTables(save);
-        // SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
-        // SetEntProp(client, Prop_Send, "m_nBody", 0);
-        
-        SetEntityModel(client, model);
-        SetEntityRenderColor(client, 255, 255, 255, 255);
+        static int table = INVALID_STRING_TABLE;
+        if (table == INVALID_STRING_TABLE)
+            table = FindStringTable("modelprecache");
+        bool save = LockStringTables(false);
+        int modelidx = FindStringIndex(table, model);
+        LockStringTables(save);
+        SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
         SetEntProp(client, Prop_Send, "m_nBody", 0);
+        SetEntityRenderColor(client, 255, 255, 255, 255);
+        
+        //SetEntityModel(client, model);
+        //SetEntProp(client, Prop_Send, "m_nBody", 0);
 
         int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
         if (team == 3)
-        {
             SetEntProp(client, Prop_Send, "m_nSkin", 1);
-        }
         else
-        {
             SetEntProp(client, Prop_Send, "m_nSkin", 0);
-        }
     }
 }
 
@@ -125,10 +111,6 @@ void LoadConfig()
             g_pRootMenu.AddItem(cat, cat);
         }
         sub.AddItem(buffer, name);
-        if (sub.ItemCount > 10)
-        {
-            LogError("Category %s has more than 10 models! please create a new category!");
-        }
     }
     while (kv.GotoNextKey());
     kv.DeleteThis();
@@ -136,10 +118,8 @@ void LoadConfig()
 
 public Action Command_ModelMenu(int client, int args)
 {
-    if (!IsValidClient(client))
-    {
+    if (!ZM_IsClientValid(client))
         return Plugin_Handled;
-    }
     g_pRootMenu.ExitButton = true;
     g_pRootMenu.Display(client, 240);
     return Plugin_Handled;
@@ -148,6 +128,7 @@ public Action Command_ModelMenu(int client, int args)
 public Action Command_ReloadCfg(int client, int args)
 {
     LoadConfig();
+    Precache();
     return Plugin_Handled;
 }
 
@@ -201,7 +182,7 @@ void Timer_LazyBOTChangePlayerModel(Handle timer, int client)
     char              key[64];
     keys.GetKey(GetRandomInt(0, g_dicModels.Size - 1), key, sizeof(key));
     char      model[PLATFORM_MAX_PATH];
-    StringMap model_info;
+    static StringMap model_info;
     g_dicModels.GetValue(key, model_info);
     model_info.GetString("model", model, sizeof(model));
     ChangePlayerModel(client, model);
@@ -227,7 +208,7 @@ Action Event_PlayerSpawnAndClass(Handle event, const char[] name, bool dontBroad
     return Plugin_Handled;
 }
 
-public void OnMapInit()
+void Precache()
 {
     if (g_dicModels.Size <= 0)
         return;
@@ -237,11 +218,16 @@ public void OnMapInit()
         char key[64];
         char buffer[PLATFORM_MAX_PATH];
         keys.GetKey(i, key, sizeof(key));
-        StringMap model_info;
+        static StringMap model_info;
         g_dicModels.GetValue(key, model_info);
         model_info.GetString("model", buffer, sizeof(buffer));
-        PrecacheModel(buffer, true);
+        PrecacheModel(buffer);
     }
+}
+
+public void OnMapInit()
+{
+    Precache();
 }
 
 public void OnPluginStart()
@@ -265,4 +251,17 @@ public void OnPluginStart()
 public void OnPluginEnd()
 {
     ClearMemeory();
+    g_dicPlayerModels.Close();
+    StringMapSnapshot keys = g_dicModels.Snapshot();
+    for (int i = 0; i < keys.Length; i++)
+    {
+        char key[64];
+        keys.GetKey(i, key, sizeof(key));
+        static StringMap model_info;
+        g_dicModels.GetValue(key, model_info);
+        model_info.Close();
+    }
+    g_dicModels.Close();
+    g_dicMenus.Close();
+    g_pRootMenu.Close();
 }

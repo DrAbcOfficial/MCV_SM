@@ -70,5 +70,5 @@ Action Cmd_SwitchDamageReport(int client, int args)
 public void OnPluginStart()
 {
     g_dicPlayerDamageReport = new StringMap();
-    RegConsoleCmd("sm_zombie_damage_report", Cmd_SwitchDamageReport, "On/Off Damage report");
+    RegConsoleCmd("sm_report", Cmd_SwitchDamageReport, "On/Off Damage report");
 }

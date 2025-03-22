@@ -19,8 +19,8 @@ public void OnZombieSpawned(int zombie)
     GetEntityClassname(zombie, classname, sizeof(classname));
     if (!strcmp(classname, "nb_zombie_crow"))
     {
-        DispatchKeyValue(zombie, "mins", "-16 -16 -16");
-        DispatchKeyValue(zombie, "maxs", "16 16 16");
+        DispatchKeyValue(zombie, "mins", "-16 -16 0");
+        DispatchKeyValue(zombie, "maxs", "16 16 32");
         SetEntPropFloat(zombie, Prop_Send, "m_flModelScale", 2.0);
     }
 }
