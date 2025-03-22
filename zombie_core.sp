@@ -294,6 +294,18 @@ public int Native_CreateCash(Handle plugin, int args)
     return cash;
 }
 
+
+// 僵尸wave
+public int Native_GetWaveNum(Handle plugin, int args)
+{
+    return GameRules_GetProp("m_iWaveNum");
+}
+public int Native_SetWaveNum(Handle plugin, int args)
+{
+    int wave = GetNativeCell(1);
+    GameRules_SetProp("m_iWaveNum", 1);
+}
+
 // Basic forward
 void ClearCache()
 {
@@ -353,6 +365,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("ZM_GetCashCount", Native_GetCashCount);
     CreateNative("ZM_GetCashByIndex", Native_GetCashByIndex);
     CreateNative("ZM_CreateCash", Native_CreateCash);
+
+    CreateNative("ZM_GetWaveNum", Native_GetWaveNum);
+    CreateNative("ZM_SetWaveNum", Native_SetWaveNum);
 
     RegPluginLibrary("Zombie Core");
     return APLRes_Success;

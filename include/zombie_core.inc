@@ -110,6 +110,19 @@ native int   ZM_GetCashByIndex(int index);
 native int   ZM_CreateCash(int owner, int count, const float org[3],
                            const float ang[3], const float vec[3]);
 
+/**
+ * Get current wave num
+ *
+ * @return wave num
+ */
+native int ZM_GetWaveNum();
+/**
+ * Set current wave num
+ *
+ * @param num wave
+ */
+native void ZM_SetWaveNum(int num);
+
 forward void OnZombieSpawned(int zombie);
 
 forward void OnZombieHurt(int attacker, int health, int armor, char[] weapon, int dmg_health, int dmg_armor, int hitgroup, int damagetype);
