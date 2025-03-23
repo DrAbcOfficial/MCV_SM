@@ -10,7 +10,7 @@
  */
 stock void MCV_SetParent(int entity, int parent)
 {
-    SetEntDataEnt(entity, 0x168, parent);
+    SetEntDataEnt2(entity, 0x168, parent);
 }
 /**
  * SetParentAttachment
@@ -20,6 +20,22 @@ stock void MCV_SetParent(int entity, int parent)
  * @param bMaintainOffset mantian offset
  */
 native void MCV_SetParentAttachment(int entity, char[] szInputName, char[] szAttachment, bool bMaintainOffset);
+
+/**
+ * SetParentAttachment
+ * @param player player
+ * @param view view model idnex, 0~2
+ * @return vietnam_view model entity index
+ */
+native int MCV_GetPlayerViewModel(int player, int view);
+
+
+/**
+ * CreateParentAttachment
+ * @param player player
+ * @param view view model idnex, 0~2
+ */
+native void MCV_CreatePlayerViewModel(int player, int view);
 
 public SharedPlugin __pl_lib_mcv = {
     name = "Lib MCV",
@@ -36,5 +52,7 @@ public SharedPlugin __pl_lib_mcv = {
 public __pl_lib_mcv_SetNTVOptional()
 {
     MarkNativeAsOptional("MCV_SetParentAttachment");
+    MarkNativeAsOptional("MCV_GetPlayerViewModel");
+    MarkNativeAsOptional("MCV_CreatePlayerViewModel");
 }
 #endif

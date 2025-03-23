@@ -16,6 +16,8 @@ public Plugin myinfo =
 
 DynLib g_pServerLib;
 Handle g_hSetParentAttachment;
+Handle g_hCBasePlayerGetViewModel;
+Handle g_hCBasePlayerCreateViewModel;
 
 public int Native_SetParentAttachment(Handle plugin, int args)
 {
@@ -35,9 +37,27 @@ public int Native_SetParentAttachment(Handle plugin, int args)
     return INVALID_ENT_REFERENCE;
 }
 
+public int Native_GetPlayerViewModel(Handle plugin, int args)
+{
+    int client = GetNativeCell(1);
+    int pass = GetNativeCell(2);
+    int view = SDKCall(g_hCBasePlayerGetViewModel, client, pass);
+    return view;
+}
+
+public int Native_CreatePlayerViewModel(Handle plugin, int args)
+{
+    int client = GetNativeCell(1);
+    int pass = GetNativeCell(2);
+    SDKCall(g_hCBasePlayerCreateViewModel, client, pass);
+    return INVALID_ENT_REFERENCE;
+}
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     CreateNative("MCV_SetParentAttachment", Native_SetParentAttachment);
+    CreateNative("MCV_GetPlayerViewModel", Native_GetPlayerViewModel);
+    CreateNative("MCV_CreatePlayerViewModel", Native_CreatePlayerViewModel);
     RegPluginLibrary("Lib MCV");
     return APLRes_Success;
 }
@@ -52,10 +72,25 @@ public void OnPluginStart()
     PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
     PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
     g_hSetParentAttachment = EndPrepSDKCall();
+
+    Address getviewmodel = g_pServerLib.ResolveSymbol("_ZNK15CVietnam_Player19GetVietnamViewmodelEi");
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetAddress(getviewmodel);
+    PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+    PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
+    g_hCBasePlayerGetViewModel = EndPrepSDKCall();  
+
+    Address createviewmodel = g_pServerLib.ResolveSymbol("_ZN15CVietnam_Player15CreateViewModelEi");
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetAddress(createviewmodel);
+    PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+    g_hCBasePlayerCreateViewModel = EndPrepSDKCall();
 }
 
 public void OnPluginEnd()
 {
-    delete g_pServerLib;
-    delete g_hSetParentAttachment;
+    g_pServerLib.Close();
+    g_hSetParentAttachment.Close();
+    g_hCBasePlayerGetViewModel.Close();
+    g_hCBasePlayerCreateViewModel.Close();
 }

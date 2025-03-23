@@ -1,6 +1,13 @@
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 #include <zombie_core>
+#include <lib_mcv>
+
+#define EF_BONEMERGE       (1 << 0)
+#define EF_NOSHADOW        (1 << 4)
+#define EF_NORECEIVESHADOW (1 << 6)
+#define EF_PARENT_ANIMATES (1 << 9)
 
 public Plugin myinfo =
 {
@@ -19,22 +26,50 @@ StringMap g_dicModels;
 // Player chosed
 StringMap g_dicPlayerModels;
 
-void ChangePlayerModel(int client, char[] model)
+void      ChangePlayerModel(int client, char[] model, char[] c_model)
 {
+    
     if (ZM_IsClientValid(client) && IsPlayerAlive(client))
     {
         static int table = INVALID_STRING_TABLE;
         if (table == INVALID_STRING_TABLE)
             table = FindStringTable("modelprecache");
-        bool save = LockStringTables(false);
-        int modelidx = FindStringIndex(table, model);
+        bool save     = LockStringTables(false);
+        int  modelidx = FindStringIndex(table, model);
         LockStringTables(save);
         SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
         SetEntProp(client, Prop_Send, "m_nBody", 0);
         SetEntityRenderColor(client, 255, 255, 255, 255);
-        
-        //SetEntityModel(client, model);
-        //SetEntProp(client, Prop_Send, "m_nBody", 0);
+        // SetEntityModel(client, model);
+        // SetEntProp(client, Prop_Send, "m_nBody", 0);
+
+
+
+        // if (strlen(c_model) > 0)
+        // {
+        //     int skin = CreateEntityByName("prop_dynamic_override");
+        //     DispatchKeyValue(skin, "model", c_model);
+        //     DispatchKeyValue(skin, "disablereceiveshadows", "1");
+        //     DispatchKeyValue(skin, "disableshadows", "1");
+        //     DispatchKeyValue(skin, "solid", "0");
+        //     DispatchKeyValue(skin, "spawnflags", "256");
+        //     SetEntProp(skin, Prop_Send, "m_CollisionGroup", 11);
+        //     DispatchSpawn(skin);
+        //     SetEntProp(skin, Prop_Send, "m_fEffects", EF_BONEMERGE | EF_NOSHADOW | EF_NORECEIVESHADOW | EF_PARENT_ANIMATES);
+        //     int baseviewmodel = MCV_GetPlayerViewModel(client, 0);
+
+        //     MCV_SetParent(skin, baseviewmodel);
+        //     MCV_SetParentAttachment(skin, "SetParentAttachment", "cam", false);
+        //     PrintToChatAll("%s %d %d", c_model, skin, baseviewmodel);
+        //     SetEntityRenderColor(baseviewmodel, 255, 255, 255, 0);
+        //     SetEntityRenderMode(baseviewmodel, RENDER_TRANSALPHA);
+        // }
+        // else
+        // {
+        //     int viewmodel = MCV_GetPlayerViewModel(client, 1);
+        //     if (IsValidEntity(viewmodel))
+        //         RemoveEntity(viewmodel);
+        // }
 
         int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
         if (team == 3)
@@ -83,13 +118,12 @@ void LoadConfig()
     }
     do
     {
-        char      name[64];
-        char      buffer[PLATFORM_MAX_PATH];
-        char      c_hand[PLATFORM_MAX_PATH];
+        char name[64];
+        char buffer[PLATFORM_MAX_PATH];
+        char c_hand[PLATFORM_MAX_PATH];
         kv.GetSectionName(name, sizeof(name));
         kv.GetString("model", buffer, sizeof(buffer));
         kv.GetString("c_hand", c_hand, sizeof(c_hand));
-
 
         StringMap model_info = new StringMap();
         model_info.SetString("model", buffer);
@@ -134,7 +168,7 @@ public Action Command_ReloadCfg(int client, int args)
 
 public void MenuHandler_ChangeModel(Menu menu, MenuAction action, int client, int slot)
 {
-    if(action == MenuAction_Cancel)
+    if (action == MenuAction_Cancel)
         g_pRootMenu.Display(client, 60);
     else if (action == MenuAction_Select)
     {
@@ -145,9 +179,16 @@ public void MenuHandler_ChangeModel(Menu menu, MenuAction action, int client, in
 
         char steamid[64];
         GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
-        g_dicPlayerModels.SetString(steamid, info, true);
+        g_dicPlayerModels.SetString(steamid, display, true);
 
-        ChangePlayerModel(client, info);
+        char             model[PLATFORM_MAX_PATH];
+        char             c_hand[PLATFORM_MAX_PATH];
+        static StringMap model_info;
+        g_dicModels.GetValue(display, model_info);
+        model_info.GetString("model", model, sizeof(model));
+        model_info.GetString("c_hand", c_hand, sizeof(c_hand));
+
+        ChangePlayerModel(client, model, c_hand);
         PrintToChat(client, "你正在使用\x03 %s", display);
     }
 }
@@ -172,20 +213,30 @@ void Timer_LazyChangePlayerModel(Handle timer, int client)
 {
     char steamid[64];
     GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
-    char model[PLATFORM_MAX_PATH];
-    g_dicPlayerModels.GetString(steamid, model, sizeof(model));
-    ChangePlayerModel(client, model);
+    char info[64];
+    g_dicPlayerModels.GetString(steamid, info, sizeof(info));
+
+    char             model[PLATFORM_MAX_PATH];
+    char             c_hand[PLATFORM_MAX_PATH];
+    static StringMap model_info;
+    g_dicModels.GetValue(info, model_info);
+    model_info.GetString("model", model, sizeof(model));
+    model_info.GetString("c_hand", c_hand, sizeof(c_hand));
+
+    ChangePlayerModel(client, model, c_hand);
 }
 void Timer_LazyBOTChangePlayerModel(Handle timer, int client)
 {
     StringMapSnapshot keys = g_dicModels.Snapshot();
     char              key[64];
     keys.GetKey(GetRandomInt(0, g_dicModels.Size - 1), key, sizeof(key));
-    char      model[PLATFORM_MAX_PATH];
+    char             model[PLATFORM_MAX_PATH];
+    char             c_hand[PLATFORM_MAX_PATH];
     static StringMap model_info;
     g_dicModels.GetValue(key, model_info);
     model_info.GetString("model", model, sizeof(model));
-    ChangePlayerModel(client, model);
+    model_info.GetString("c_hand", c_hand, sizeof(c_hand));
+    ChangePlayerModel(client, model, c_hand);
 }
 
 Action Event_PlayerSpawnAndClass(Handle event, const char[] name, bool dontBroadcast)
@@ -222,6 +273,9 @@ void Precache()
         g_dicModels.GetValue(key, model_info);
         model_info.GetString("model", buffer, sizeof(buffer));
         PrecacheModel(buffer);
+        model_info.GetString("c_hand", buffer, sizeof(buffer));
+        if (strlen(buffer) > 0)
+            PrecacheModel(buffer);
     }
 }
 
