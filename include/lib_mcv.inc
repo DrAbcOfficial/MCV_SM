@@ -27,8 +27,7 @@ native void MCV_SetParentAttachment(int entity, char[] szInputName, char[] szAtt
  * @param view view model idnex, 0~2
  * @return vietnam_view model entity index
  */
-native int MCV_GetPlayerViewModel(int player, int view);
-
+native int  MCV_GetPlayerViewModel(int player, int view);
 
 /**
  * CreateParentAttachment
@@ -36,6 +35,34 @@ native int MCV_GetPlayerViewModel(int player, int view);
  * @param view view model idnex, 0~2
  */
 native void MCV_CreatePlayerViewModel(int player, int view);
+
+/**
+ * CBaseEntity::FollowEntity
+ * @param entity entity
+ * @param follow follow
+ * @param mergebone merge bone
+ */
+native void MCV_FollowEntity(int entity, int follow, bool mergebone);
+
+/**
+ * CBaseEntity::GetFollowedEntity
+ * @param entity entity
+ * @return followed entity
+ */
+native int  MCV_GetFollowedEntity(int entity);
+
+/**
+ * CBaseEntity::IsFollowingEntity
+ * @param entity entity
+ * @return yes or no
+ */
+native bool MCV_IsFollowingEntity(int entity);
+
+/**
+ * CBaseEntity::StopFollowingEntity
+ * @param entity entity
+ */
+native void MCV_StopFollowingEntity(int entity);
 
 public SharedPlugin __pl_lib_mcv = {
     name = "Lib MCV",
