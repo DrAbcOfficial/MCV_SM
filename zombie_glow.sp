@@ -20,18 +20,23 @@ ConVar    g_pGlowCount;
 
 ArrayList g_aryGlowEntity;
 
+void      ClearGlowEntity()
+{
+    for (int i = 0; i < g_aryGlowEntity.Length; i++)
+    {
+        int ent = g_aryGlowEntity.Get(i);
+        if (IsValidEntity(ent))
+            RemoveEntity(ent);
+    }
+    g_aryGlowEntity.Clear();
+}
+
 public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name, char[] weapon_id, int damagebits, bool headshot, bool backblast, int penetrated, float killdistance)
 {
     int count = ZM_GetZombieCount();
     if (count <= g_pGlowCount.IntValue)
     {
-        for (int i = 0; i < g_aryGlowEntity.Length; i++)
-        {
-            int ent  = g_aryGlowEntity.Get(i);
-            if (IsValidEntity(ent))
-                RemoveEntity(ent);
-        }
-        g_aryGlowEntity.Clear();
+        ClearGlowEntity();
         for (int i = 0; i < count; i++)
         {
             int z = ZM_GetZombieByIndex(i);
@@ -50,12 +55,18 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
                 SetEntPropFloat(skin, Prop_Send, "m_flGlowMaxDist", 8192.0);
                 SetEntProp(skin, Prop_Send, "m_bShouldGlow", 1);
                 SetEntProp(skin, Prop_Send, "m_clrGlow", 0xFFFFFFFF);
-                SetEntProp(skin, Prop_Send, "m_flModelScale", 2.0);
+                SetEntPropFloat(skin, Prop_Send, "m_flModelScale", 2.0);
                 MCV_FollowEntity(skin, z, false);
                 g_aryGlowEntity.Push(skin);
             }
         }
     }
+}
+
+public void OnZombiePhaseChanged(int phase)
+{
+    if (phase == ZM_PHASE_WAITING)
+        ClearGlowEntity();
 }
 
 public void OnMapInit(const char[] mapName)
