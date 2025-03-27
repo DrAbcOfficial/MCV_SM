@@ -111,10 +111,18 @@ public int Native_GetZombieByIndex(Handle plugin, int args)
 }
 
 GlobalForward g_pZombieSpawnForward;
+GlobalForward g_pZombieDestoryForward;
 
 public void ZombieSpawn_Post(int entity)
 {
     Call_StartForward(g_pZombieSpawnForward);
+    Call_PushCell(entity);
+    Call_Finish();
+}
+
+public void ZombieDestory(int entity)
+{
+    Call_StartForward(g_pZombieDestoryForward);
     Call_PushCell(entity);
     Call_Finish();
 }
@@ -303,7 +311,8 @@ public int Native_GetWaveNum(Handle plugin, int args)
 public int Native_SetWaveNum(Handle plugin, int args)
 {
     int wave = GetNativeCell(1);
-    GameRules_SetProp("m_iWaveNum", 1);
+    GameRules_SetProp("m_iWaveNum", wave);
+    return INVALID_ENT_REFERENCE;
 }
 
 // Basic forward
@@ -337,6 +346,7 @@ public void OnEntityDestroyed(int entity)
     {
         SDKUnhook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
         g_aryZombies.Erase(z);
+        ZombieDestory(z);
     }
 
     int c = g_aryCashes.FindValue(entity);
@@ -379,6 +389,7 @@ public void OnPluginStart()
     g_aryCashes                = new ArrayList();
 
     g_pZombieSpawnForward      = new GlobalForward("OnZombieSpawned", ET_Ignore, Param_Cell);
+    g_pZombieDestoryForward     = new GlobalForward("OnZombieDestoryed", ET_Ignore, Param_Cell);
 
     g_pPhaseChangedForward     = new GlobalForward("OnZombiePhaseChanged", ET_Ignore, Param_Cell);
 

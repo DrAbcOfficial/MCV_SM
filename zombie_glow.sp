@@ -27,8 +27,9 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
     {
         for (int i = 0; i < g_aryGlowEntity.Length; i++)
         {
-            if (IsValidEntity(i))
-                RemoveEntity(i);
+            int ent  = g_aryGlowEntity.Get(i);
+            if (IsValidEntity(ent))
+                RemoveEntity(ent);
         }
         g_aryGlowEntity.Clear();
         for (int i = 0; i < count; i++)
@@ -36,7 +37,7 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
             int z = ZM_GetZombieByIndex(i);
             if (IsValidEntity(z))
             {
-                int skin = CreateEntityByName("prop_dynamic_glow");
+                int skin = CreateEntityByName("prop_dynamic");
                 DispatchKeyValue(skin, "model", GLOW_MODEL);
                 DispatchKeyValue(skin, "disablereceiveshadows", "1");
                 DispatchKeyValue(skin, "disableshadows", "1");
@@ -49,6 +50,7 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
                 SetEntPropFloat(skin, Prop_Send, "m_flGlowMaxDist", 8192.0);
                 SetEntProp(skin, Prop_Send, "m_bShouldGlow", 1);
                 SetEntProp(skin, Prop_Send, "m_clrGlow", 0xFFFFFFFF);
+                SetEntProp(skin, Prop_Send, "m_flModelScale", 2.0);
                 MCV_FollowEntity(skin, z, false);
                 g_aryGlowEntity.Push(skin);
             }

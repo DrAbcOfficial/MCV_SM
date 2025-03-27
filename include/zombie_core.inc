@@ -125,6 +125,8 @@ native void ZM_SetWaveNum(int num);
 
 forward void OnZombieSpawned(int zombie);
 
+forward void OnZombieDestoryed(int zombie);
+
 forward void OnZombieHurt(int attacker, int health, int armor, char[] weapon, int dmg_health, int dmg_armor, int hitgroup, int damagetype);
 
 forward void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name,
