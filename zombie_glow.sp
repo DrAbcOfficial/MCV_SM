@@ -5,7 +5,6 @@
 
 #define PLUGIN_NAME        "Zombie Glow"
 #define PLUGIN_DESCRIPTION "全新僵尸高亮王一代"
-#define GLOW_MODEL         "models/tools/axis/axis.mdl"
 
 public Plugin myinfo =
 {
@@ -42,8 +41,10 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
             int z = ZM_GetZombieByIndex(i);
             if (IsValidEntity(z))
             {
+                char model[PLATFORM_MAX_PATH];
+                GetEntPropString(z, Prop_Data, "m_ModelName", model, sizeof(model));
                 int skin = CreateEntityByName("prop_dynamic");
-                DispatchKeyValue(skin, "model", GLOW_MODEL);
+                DispatchKeyValue(skin, "model", model);
                 DispatchKeyValue(skin, "disablereceiveshadows", "1");
                 DispatchKeyValue(skin, "disableshadows", "1");
                 DispatchKeyValue(skin, "solid", "0");
@@ -56,7 +57,7 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
                 SetEntProp(skin, Prop_Send, "m_bShouldGlow", 1);
                 SetEntProp(skin, Prop_Send, "m_clrGlow", 0xFFFFFFFF);
                 SetEntPropFloat(skin, Prop_Send, "m_flModelScale", 2.0);
-                MCV_FollowEntity(skin, z, false);
+                MCV_FollowEntity(skin, z, true);
                 g_aryGlowEntity.Push(skin);
             }
         }
@@ -72,7 +73,6 @@ public void OnZombiePhaseChanged(int phase)
 public void OnMapInit(const char[] mapName)
 {
     g_aryGlowEntity.Clear();
-    PrecacheModel(GLOW_MODEL);
 }
 
 public void OnPluginStart()

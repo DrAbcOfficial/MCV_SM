@@ -13,6 +13,24 @@ stock void MCV_SetParent(int entity, int parent)
     SetEntDataEnt2(entity, 0x168, parent);
 }
 /**
+ * GetParent
+ * @param entity entity
+ * @return parent
+ */
+stock int MCV_GetParent(int entity)
+{
+    return GetEntData(entity, 0x168);
+}
+/**
+ * GetParent
+ * @param entity entity
+ * @return model index
+ */
+stock int MCV_GetModelIndex(int entity)
+{
+    return GetEntData(entity, 0x14a);
+}
+/**
  * SetParentAttachment
  * @param entity entity
  * @param szInputName input name

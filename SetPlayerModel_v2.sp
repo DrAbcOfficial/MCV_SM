@@ -13,7 +13,7 @@ public Plugin myinfo =
 {
     name        = "Model menu",
     author      = "Dr.Abc",
-    description = "僵尸特化人物菜单二代",
+    description = "僵尸特化人物菜单三代",
     version     = "Model menu",
     url         = "Model menu"
 };
@@ -26,9 +26,8 @@ StringMap g_dicModels;
 // Player chosed
 StringMap g_dicPlayerModels;
 
-void      ChangePlayerModel(int client, char[] model, char[] c_model)
+void ChangePlayerModel(int client, char[] model, char[] c_model)
 {
-    
     if (ZM_IsClientValid(client) && IsPlayerAlive(client))
     {
         static int table = INVALID_STRING_TABLE;
@@ -43,39 +42,21 @@ void      ChangePlayerModel(int client, char[] model, char[] c_model)
         // SetEntityModel(client, model);
         // SetEntProp(client, Prop_Send, "m_nBody", 0);
 
-
-
-        // if (strlen(c_model) > 0)
-        // {
-        //     int skin = CreateEntityByName("prop_dynamic_override");
-        //     DispatchKeyValue(skin, "model", c_model);
-        //     DispatchKeyValue(skin, "disablereceiveshadows", "1");
-        //     DispatchKeyValue(skin, "disableshadows", "1");
-        //     DispatchKeyValue(skin, "solid", "0");
-        //     DispatchKeyValue(skin, "spawnflags", "256");
-        //     SetEntProp(skin, Prop_Send, "m_CollisionGroup", 11);
-        //     DispatchSpawn(skin);
-        //     SetEntProp(skin, Prop_Send, "m_fEffects", EF_BONEMERGE | EF_NOSHADOW | EF_NORECEIVESHADOW | EF_PARENT_ANIMATES);
-        //     int baseviewmodel = MCV_GetPlayerViewModel(client, 0);
-
-        //     MCV_SetParent(skin, baseviewmodel);
-        //     MCV_SetParentAttachment(skin, "SetParentAttachment", "cam", false);
-        //     PrintToChatAll("%s %d %d", c_model, skin, baseviewmodel);
-        //     SetEntityRenderColor(baseviewmodel, 255, 255, 255, 0);
-        //     SetEntityRenderMode(baseviewmodel, RENDER_TRANSALPHA);
-        // }
-        // else
-        // {
-        //     int viewmodel = MCV_GetPlayerViewModel(client, 1);
-        //     if (IsValidEntity(viewmodel))
-        //         RemoveEntity(viewmodel);
-        // }
-
-        int team = GetEntProp(client, Prop_Send, "m_iTeamNum");
-        if (team == 3)
-            SetEntProp(client, Prop_Send, "m_nSkin", 1);
+        int c_arm = INVALID_ENT_REFERENCE;
+        if (strlen(c_model) > 0)
+        {
+            
+        }
         else
-            SetEntProp(client, Prop_Send, "m_nSkin", 0);
+        {
+            
+        }
+
+        int  team = GetEntProp(client, Prop_Send, "m_iTeamNum");
+        bool vc   = team == 3;
+        SetEntProp(client, Prop_Send, "m_nSkin", vc ? 1 : 0);
+        if (c_arm != INVALID_ENT_REFERENCE)
+            SetEntProp(c_arm, Prop_Send, "m_nSkin", vc ? 1 : 0);
     }
 }
 

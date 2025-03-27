@@ -320,11 +320,13 @@ void ClearCache()
 {
     for (int i = 0; i < g_aryZombies.Length; i++)
     {
-        SDKUnhook(i, SDKHook_SpawnPost, ZombieSpawn_Post);
+        int z = g_aryZombies.Get(i);
+        SDKUnhook(z, SDKHook_SpawnPost, ZombieSpawn_Post);
     }
     for (int i = 0; i < g_aryCashes.Length; i++)
     {
-        SDKUnhook(i, SDKHook_Touch, OnCashTouched);
+        int z = g_aryCashes.Get(i);
+        SDKUnhook(z, SDKHook_Touch, OnCashTouched);
     }
     g_aryCashes.Clear();
     g_aryZombies.Clear();
@@ -334,6 +336,9 @@ public void OnEntityCreated(int entity, const char[] classname)
 {
     if (!strncmp(classname, "nb_zombie", 9, false))
     {
+        int index = g_aryZombies.FindValue(entity);
+        if(index != -1)
+            g_aryZombies.Erase(index);
         g_aryZombies.Push(entity);
         SDKHook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
     }
@@ -346,7 +351,7 @@ public void OnEntityDestroyed(int entity)
     {
         SDKUnhook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
         g_aryZombies.Erase(z);
-        ZombieDestory(z);
+        ZombieDestory(entity);
     }
 
     int c = g_aryCashes.FindValue(entity);

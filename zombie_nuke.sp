@@ -24,7 +24,14 @@ public Action Command_Nuke(int client, int args)
     return Plugin_Handled;
 }
 
+public Action Command_Skip(int client, int args)
+{
+    ZM_SetWaveNum(0);
+    return Plugin_Handled;
+}
+
 public void OnPluginStart()
 {
     RegAdminCmd("sm_zombie_nuke", Command_Nuke, ADMFLAG_CONFIG, "Nuke all zombie");
+    RegAdminCmd("sm_zombie_skip", Command_Nuke, ADMFLAG_CONFIG, "Skip this wave");
 }
