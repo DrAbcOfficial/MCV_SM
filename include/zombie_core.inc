@@ -115,13 +115,26 @@ native int   ZM_CreateCash(int owner, int count, const float org[3],
  *
  * @return wave num
  */
-native int ZM_GetWaveNum();
+native int   ZM_GetWaveNum();
 /**
  * Set current wave num
  *
  * @param num wave
  */
-native void ZM_SetWaveNum(int num);
+native void  ZM_SetWaveNum(int num);
+
+/**
+ * Get current enemies remaining
+ *
+ * @return enemies num
+ */
+native int   ZM_GetReaminingEnemies();
+/**
+ * Set current enemies remaining
+ *
+ * @param enemies wave
+ */
+native void  ZM_SetReaminingEnemies(int num);
 
 forward void OnZombieSpawned(int zombie);
 

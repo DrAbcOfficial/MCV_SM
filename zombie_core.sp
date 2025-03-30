@@ -302,16 +302,28 @@ public int Native_CreateCash(Handle plugin, int args)
     return cash;
 }
 
-
 // 僵尸wave
 public int Native_GetWaveNum(Handle plugin, int args)
 {
     return GameRules_GetProp("m_iWaveNum");
 }
+
 public int Native_SetWaveNum(Handle plugin, int args)
 {
     int wave = GetNativeCell(1);
     GameRules_SetProp("m_iWaveNum", wave);
+    return INVALID_ENT_REFERENCE;
+}
+
+//僵尸剩余
+public int Native_GetReaminingEnemies(Handle plugin, int args)
+{
+    return GameRules_GetProp("m_iNumEnemiesRemaining");
+}
+public int Native_SetReaminingEnemies(Handle plugin, int args)
+{
+    int enemy = GetNativeCell(1);
+    GameRules_SetProp("m_iNumEnemiesRemaining", enemy);
     return INVALID_ENT_REFERENCE;
 }
 
@@ -337,7 +349,7 @@ public void OnEntityCreated(int entity, const char[] classname)
     if (!strncmp(classname, "nb_zombie", 9, false))
     {
         int index = g_aryZombies.FindValue(entity);
-        if(index != -1)
+        if (index != -1)
             g_aryZombies.Erase(index);
         g_aryZombies.Push(entity);
         SDKHook(entity, SDKHook_SpawnPost, ZombieSpawn_Post);
@@ -384,6 +396,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("ZM_GetWaveNum", Native_GetWaveNum);
     CreateNative("ZM_SetWaveNum", Native_SetWaveNum);
 
+    CreateNative("ZM_GetReaminingEnemies", Native_GetReaminingEnemies);
+    CreateNative("ZM_SetReaminingEnemies", Native_SetReaminingEnemies);
+
     RegPluginLibrary("Zombie Core");
     return APLRes_Success;
 }
@@ -394,7 +409,7 @@ public void OnPluginStart()
     g_aryCashes                = new ArrayList();
 
     g_pZombieSpawnForward      = new GlobalForward("OnZombieSpawned", ET_Ignore, Param_Cell);
-    g_pZombieDestoryForward     = new GlobalForward("OnZombieDestoryed", ET_Ignore, Param_Cell);
+    g_pZombieDestoryForward    = new GlobalForward("OnZombieDestoryed", ET_Ignore, Param_Cell);
 
     g_pPhaseChangedForward     = new GlobalForward("OnZombiePhaseChanged", ET_Ignore, Param_Cell);
 
