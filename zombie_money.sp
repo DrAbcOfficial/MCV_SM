@@ -18,22 +18,6 @@ ConVar g_pPlayerSurvivedIncome;
 ConVar g_pPlayerHeadshotIncome;
 ConVar g_pPlayerBackblastIncome;
 
-public void OnZombiePhaseChanged(int phase)
-{
-    if (phase == ZM_PHASE_WAITING)
-    {
-        for (int i = 1; i <= MaxClients; i++)
-        {
-            if (ZM_IsClientValid(i))
-            {
-                int add = g_pPlayerSurvivedIncome.IntValue;
-                ZM_AddMoney(i, add);
-                PrintCenterText(i, "你获得了%d元工资。", add);
-            }
-        }
-    }
-}
-
 public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] weapon_name, char[] weapon_id,
                     int damagebits, bool headshot, bool backblast, int penetrated, float killdistance)
 {
