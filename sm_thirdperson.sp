@@ -2,8 +2,9 @@
 #include <sdktools>
 #define PLUGIN_VERSION "01.01"
 
-Menu   g_ThirdpersonMenu;
-ConVar g_pCheat;
+Menu      g_ThirdpersonMenu;
+ConVar    g_pCheat;
+StringMap g_pStored;
 
 public Plugin myinfo =
 {
@@ -13,10 +14,12 @@ public Plugin myinfo =
     version     = PLUGIN_VERSION,
     url         = "in ur face"
 
+
 }
 
 public OnPluginStart()
 {
+    g_pStored = new StringMap();
     RegConsoleCmd("sm_thirdperson", Command_Thirdperson, "Open the !thirdperson Menu");
     g_ThirdpersonMenu = CreateMenu(Menu_Thirdperson);
     g_pCheat          = FindConVar("sv_cheats");
@@ -48,12 +51,28 @@ public Action Command_Thirdperson(int client, int args)
     return Plugin_Handled
 }
 
-public Menu_Thirdperson(Handle weapons, MenuAction action, int param1, int param2)
+public Menu_Thirdperson(Handle weapons, MenuAction action, int client, int slot)
 {
     if (action == MenuAction_Select)
     {
+        char steamid[64];
+        GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid));
+
         char info[32];
-        GetMenuItem(weapons, param2, info, sizeof(info));
-        PerformCheatCommand(param1, info);
+        GetMenuItem(weapons, slot, info, sizeof(info));
+
+        bool t = info[0] == 't';
+        if (g_pStored.ContainsKey(steamid))
+        {
+            bool s;
+            g_pStored.GetValue(steamid, s);
+            if (s == t)
+            {
+                PrintToChat(client, "\x03 你已经在第%s人称了哦~", s ? "三" : "一");
+                return;
+            }
+        }
+        PerformCheatCommand(client, info);
+        g_pStored.SetValue(steamid, t);
     }
 }
