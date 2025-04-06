@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <zombie_core>
+#include <lib_mcv>
 
 #define PLUGIN_NAME        "Zombie DingZheng"
 #define PLUGIN_DESCRIPTION "全新僵尸顶针王一代"

@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <zombie_core>
+#include <lib_mcv>
 
 #define PLUGIN_NAME        "Zombie DamageReport"
 #define PLUGIN_DESCRIPTION "全新僵尸报告王一代"
@@ -19,7 +19,7 @@ StringMap g_dicPlayerDamageReport;
 
 public void OnZombieHurt(int attacker, int health, int armor, char[] weapon, int dmg_health, int dmg_armor, int hitgroup, int damagetype)
 {
-    if (ZM_IsClientValid(attacker))
+    if (MCV_IsClientValid(attacker))
     {
         char buffer[64];
         GetClientAuthId(attacker, AuthId_SteamID64, buffer, sizeof(buffer));

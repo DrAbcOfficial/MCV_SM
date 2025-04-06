@@ -1,4 +1,4 @@
-#include <zombie_core>
+#include <lib_mcv>
 #include <sdktools>
 
 #define PLUGIN_NAME        "Zombie Crow"

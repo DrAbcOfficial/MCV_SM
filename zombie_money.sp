@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <zombie_core>
+#include <lib_mcv>
 
 #define PLUGIN_NAME        "Zombie Money"
 #define PLUGIN_DESCRIPTION "全新僵尸金币王一代"
@@ -37,10 +37,10 @@ public void OnZombieKilled(int zombie, char[] classname, int attacker, char[] we
 
 Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
-    if (ZM_GetPhase() == ZM_PHASE_WAITING)
+    if (ZM_GetCurrentPhase() == ZM_PHASE_WAITING)
         return Plugin_Continue;
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
-    if (ZM_IsClientValid(client))
+    if (MCV_IsClientValid(client))
     {
         int add = g_pPlayerDeathIncome.IntValue;
         ZM_AddMoney(client, add);

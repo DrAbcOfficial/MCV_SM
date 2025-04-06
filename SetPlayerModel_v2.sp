@@ -1,7 +1,6 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <zombie_core>
 #include <lib_mcv>
 
 #define EF_BONEMERGE       (1 << 0)
@@ -28,7 +27,7 @@ StringMap g_dicPlayerModels;
 
 void ChangePlayerModel(int client, char[] model, char[] c_model)
 {
-    if (ZM_IsClientValid(client) && IsPlayerAlive(client))
+    if (MCV_IsClientValid(client) && IsPlayerAlive(client))
     {
         static int table = INVALID_STRING_TABLE;
         if (table == INVALID_STRING_TABLE)
@@ -133,7 +132,7 @@ void LoadConfig()
 
 public Action Command_ModelMenu(int client, int args)
 {
-    if (!ZM_IsClientValid(client))
+    if (!MCV_IsClientValid(client))
         return Plugin_Handled;
     g_pRootMenu.ExitButton = true;
     g_pRootMenu.Display(client, 240);

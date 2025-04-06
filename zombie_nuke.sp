@@ -1,5 +1,5 @@
 #include <sdkhooks>
-#include <zombie_core>
+#include <lib_mcv>
 
 #define PLUGIN_NAME        "Zombie Nuke"
 #define PLUGIN_DESCRIPTION "全新僵尸核弹王二代"

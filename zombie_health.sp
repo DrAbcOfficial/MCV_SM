@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <zombie_core>
+#include <lib_mcv>
 
 #define PLUGIN_NAME        "Zombie Health"
 #define PLUGIN_DESCRIPTION "全新僵尸血量王二代"
@@ -66,7 +66,7 @@ public void OnZombieSpawned(int zombie)
     int amout = 0;
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (ZM_IsClientValid(i) && GetClientTeam(i) > 1)
+        if (MCV_IsClientValid(i) && GetClientTeam(i) > 1)
             amout++;
     }
     if(amout <= 0)
