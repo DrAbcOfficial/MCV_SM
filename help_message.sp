@@ -16,7 +16,7 @@ public Plugin myinfo =
 
 Action Cmd_PrintHelp(int client, int args)
 {
-    ReplyToCommand(client, "\x02[音频列表]\x01 !slist");
+    ReplyToCommand(client, "\x02[音频列表]\x01 !slist \x02[第三人称]\x01 !tp");
     ReplyToCommand(client, "\x04[伤害报告]\x01 !report");
     return Plugin_Handled;
 }
