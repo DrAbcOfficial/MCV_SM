@@ -29,17 +29,17 @@ void ChangePlayerModel(int client, char[] model, char[] c_model)
 {
     if (MCV_IsClientValid(client) && IsPlayerAlive(client))
     {
-        static int table = INVALID_STRING_TABLE;
-        if (table == INVALID_STRING_TABLE)
-            table = FindStringTable("modelprecache");
-        bool save     = LockStringTables(false);
-        int  modelidx = FindStringIndex(table, model);
-        LockStringTables(save);
-        SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
-        SetEntProp(client, Prop_Send, "m_nBody", 0);
+        // static int table = INVALID_STRING_TABLE;
+        // if (table == INVALID_STRING_TABLE)
+        //     table = FindStringTable("modelprecache");
+        // bool save     = LockStringTables(false);
+        // int  modelidx = FindStringIndex(table, model);
+        // LockStringTables(save);
+        // SetEntProp(client, Prop_Send, "m_nModelIndex", modelidx);
+        //SetEntProp(client, Prop_Send, "m_nBody", 0);
         SetEntityRenderColor(client, 255, 255, 255, 255);
-        // SetEntityModel(client, model);
-        // SetEntProp(client, Prop_Send, "m_nBody", 0);
+        MCV_PlayerSetModel(client, model);
+        SetEntProp(client, Prop_Send, "m_nBody", 0);
 
         int c_arm = INVALID_ENT_REFERENCE;
         if (strlen(c_model) > 0)
