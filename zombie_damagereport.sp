@@ -2,7 +2,7 @@
 #include <lib_mcv>
 
 #define PLUGIN_NAME        "Zombie DamageReport"
-#define PLUGIN_DESCRIPTION "全新僵尸报告王二代"
+#define PLUGIN_DESCRIPTION "全新僵尸报告王三代"
 
 #define BAR_SIZE           10
 
@@ -18,15 +18,23 @@ public Plugin myinfo =
 StringMap g_dicPlayerDamageReport;
 
 ConVar    g_pEnableRoundReport;
-int       g_iAllDealedDamage;
-StringMap g_dicPlayerDealedDamage;
 Handle    g_hHudSyncer;
+
+enum struct CReportInfo
+{
+    int damage;
+}
+
+CReportInfo g_pGlobalReportInfo;
+CReportInfo g_aryReportInfos[MAXPLAYERS + 1];
 
 public void OnZombieHurt(int attacker, int health, int armor, char[] weapon, int dmg_health, int dmg_armor, int hitgroup, int damagetype)
 {
     if (MCV_IsClientValid(attacker))
     {
-        g_iAllDealedDamage += dmg_health;
+        g_pGlobalReportInfo.damage += dmg_health;
+        g_aryReportInfos[attacker].damage += dmg_health;
+
         char buffer[64];
         GetClientAuthId(attacker, AuthId_SteamID64, buffer, sizeof(buffer));
         if (g_dicPlayerDamageReport.ContainsKey(buffer))
@@ -36,11 +44,6 @@ public void OnZombieHurt(int attacker, int health, int armor, char[] weapon, int
             if (on)
                 PrintCenterText(attacker, "造成%d伤害, 剩余%d血量", dmg_health, health);
         }
-
-        int dealedDamage = 0;
-        if (g_dicPlayerDealedDamage.ContainsKey(buffer))
-            g_dicPlayerDealedDamage.GetValue(buffer, dealedDamage);
-        g_dicPlayerDealedDamage.SetValue(buffer, dealedDamage + dmg_health);
     }
 }
 
@@ -78,6 +81,15 @@ Action Cmd_SwitchDamageReport(int client, int args)
     return Plugin_Handled;
 }
 
+void ResetReportItems()
+{
+    g_pGlobalReportInfo.damage = 0;
+    for (int i = 0; i < MAXPLAYERS + 1; i++)
+    {
+        g_aryReportInfos[i].damage = 0;
+    }
+}
+
 public void OnZombiePhaseChanged(int phase)
 {
     if (phase == ZM_PHASE_WAITING)
@@ -86,63 +98,55 @@ public void OnZombiePhaseChanged(int phase)
         static ConVar zombie_health;
         if (zombie_health == INVALID_HANDLE)
             zombie_health = FindConVar("sm_zombie_health_baseratio");
-        float             diff = zombie_health.FloatValue;
+        float diff       = zombie_health.FloatValue;
 
-        char              mvp_steamid[64];
-        int               mvp_damage = 0;
-        StringMapSnapshot keys       = g_dicPlayerDealedDamage.Snapshot();
-        for (int i = 0; i <= keys.Length; i++)
-        {
-            char steamid[64];
-            int  damage;
-            keys.GetKey(i, steamid, sizeof(steamid));
-            g_dicPlayerDealedDamage.GetValue(steamid, damage);
-            if (damage > mvp_damage)
-            {
-                mvp_damage = damage;
-                strcopy(mvp_steamid, sizeof(mvp_steamid), steamid);
-            }
-        }
-        char mvp_name[128];
+        int   mvp_index  = 0;
+        int   mvp_damage = 0;
+        char  mvp_name[128];
         for (int i = 1; i <= MaxClients; i++)
         {
             if (MCV_IsClientValid(i))
             {
-                char buffer[64];
-                GetClientAuthId(i, AuthId_SteamID64, buffer, sizeof(buffer));
-                if (!strcmp(buffer, mvp_steamid))
+                if (g_aryReportInfos[i].damage > mvp_damage)
                 {
-                    GetClientName(i, mvp_name, sizeof(mvp_name));
-                    break;
+                    mvp_damage = g_aryReportInfos[i].damage;
+                    mvp_index  = i;
                 }
             }
         }
-        SetHudTextParams(0.7, 0.1, 10.0, 255, 255, 255, 255, 1, 1.0, 0.1, 0.2);
+        if (mvp_index > 0)
+            GetClientName(mvp_index, mvp_name, sizeof(mvp_name));
+
+        SetHudTextParams(0.55, 0.1, 10.0, 255, 255, 255, 255, 1, 1.0, 0.1, 0.2);
         for (int i = 1; i <= MaxClients; i++)
         {
             if (!IsClientInGame(i) || IsFakeClient(i))
                 continue;
-            ShowSyncHudText(i, g_hHudSyncer, "回合结束\n  波次：第%d波\n  难度：x%.2f\n  总伤害：%d   \n  回合MVP：%s (%d伤害)",
-                            wave - 1, diff, g_iAllDealedDamage, mvp_name, mvp_damage);
+            ShowSyncHudText(i, g_hHudSyncer, "回合结束\n  波次：第%d波\n  难度：x%.2f\n  总伤害：%d   \n  回合MVP：%s (%d伤害)\n 你的伤害：%d",
+                            wave, diff, g_pGlobalReportInfo.damage, mvp_name, mvp_damage, g_aryReportInfos[i].damage);
         }
-        g_iAllDealedDamage = 0;
-        g_dicPlayerDealedDamage.Clear();
+        ResetReportItems();
     }
+}
+
+public void OnMapInit(const char[] mapName)
+{
+    ResetReportItems();
 }
 
 public void OnPluginStart()
 {
     g_dicPlayerDamageReport = new StringMap();
-    g_dicPlayerDealedDamage = new StringMap();
     g_hHudSyncer            = CreateHudSynchronizer();
     RegConsoleCmd("sm_report", Cmd_SwitchDamageReport, "On/Off Damage report");
     g_pEnableRoundReport = CreateConVar("sm_zombie_report", "1", "Enable zombie report when round ended.", 0, true, 0.0, true, 1.0);
+
+    ResetReportItems();
 }
 
 public void OnPluginEnd()
 {
     g_hHudSyncer.Close();
     g_dicPlayerDamageReport.Close();
-    g_dicPlayerDealedDamage.Close();
     g_pEnableRoundReport.Close();
 }
