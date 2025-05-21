@@ -1,3 +1,4 @@
+#include <sourcemod>
 #define PLUGIN_NAME        "Auto amounter"
 #define PLUGIN_DESCRIPTION "全新自动工坊挂载王一代"
 
@@ -20,27 +21,38 @@ enum PHASE
 PHASE g_iPhase = NOT_AMOUNT;
 char  originalMapname[64];
 
+void  LaterWorkshop(Handle timer)
+{
+    ServerCommand("exec mapgroup_workshop.cfg");
+    char mapName[64];
+    GetCurrentMap(mapName, sizeof(mapName));
+    strcopy(originalMapname, sizeof(originalMapname), mapName);
+    g_iPhase = AMOUNTED;
+}
+
+void LaterReady(Handle timer)
+{
+    ServerCommand("map %s", originalMapname);
+    g_iPhase = ALL_DONE;
+}
+
 public void OnMapStart()
 {
     switch (g_iPhase)
     {
         case NOT_AMOUNT:
         {
-            ServerCommand("exec mapgroup_workshop.cfg");
-            char mapName[64];
-            GetCurrentMap(mapName, sizeof(mapName));
-            strcopy(originalMapname, sizeof(originalMapname), mapName);
-            g_iPhase = AMOUNTED;
+            CreateTimer(1.0, LaterWorkshop);
         }
         case AMOUNTED:
         {
-            ServerCommand("map %s", originalMapname);
-            g_iPhase = ALL_DONE;
+            CreateTimer(1.0, LaterReady);
         }
     }
 }
 
 char g_szRejectReason[] = "服务器还在启动中……稍后再来吧！";
+
 public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 {
     if (g_iPhase != ALL_DONE)
@@ -49,4 +61,9 @@ public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
         return false;
     }
     return true;
+}
+
+public void OnPluginStart()
+{
+    g_iPhase = NOT_AMOUNT;
 }
